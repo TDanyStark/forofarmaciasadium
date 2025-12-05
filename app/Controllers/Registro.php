@@ -43,11 +43,6 @@ class Registro extends BaseController
 
         $this->registroModel->insert($saveData);
 
-        return redirect()->to('/registro/thankyou');
-    }
-
-    public function thankyou()
-    {
-        echo view('registro/thankyou');
+        return redirect()->to('/');
     }
 }
