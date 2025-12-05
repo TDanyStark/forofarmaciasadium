@@ -1,4 +1,9 @@
 /* Shared styles for Foro Farmacias ADIUM */
+:root {
+  --adium-red: #fa0032;
+  --adium-red-dark: #dd002c;
+}
+
 body {
   font-family: Arial, Helvetica, sans-serif;
   background: #f8f9fa;
@@ -24,17 +29,17 @@ body {
 }
 
 .text-adium {
-  color: #fa0032;
+  color: var(--adium-red);
   font-weight: bold;
 }
 
 .btn-adium, .btn-adium:focus, .btn-adium:active, .btn-adium:hover {
-  background-color: #fa0032;
+  background-color: var(--adium-red);
   color: #fff;
   font-weight: bold;
 }
 
 .btn-adium:hover {
-  background-color: #dd002cff;
+  background-color: var(--adium-red-dark);
   color: #fff;
 }

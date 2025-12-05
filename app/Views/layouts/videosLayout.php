@@ -77,10 +77,36 @@
         display: block;
       }
     }
+
+    /* Active link styling */
+    .main-nav a.active {
+      color: #fff;
+      background-color: var(--adium-red);
+      font-weight: 700;
+      position: relative;
+      padding: 6px 12px;
+      border-radius: 4px;
+    }
+
+    .header-item{
+      transition: background-color 0.3s ease;
+      padding: 6px 12px;
+    }
+    .header-item:hover {
+      color: #fff;
+      background-color: var(--adium-red);
+      font-weight: 700;
+      position: relative;
+      padding: 6px 12px;
+      border-radius: 4px;
+
+    }
+
   </style>
 </head>
 
 <body>
+  <?php $current = uri_string(); ?>
   <header class="site-header" role="banner">
     <div class="container-header">
       <a href="<?= site_url() ?>" class="brand">
@@ -89,16 +115,22 @@
       <button class="nav-toggle" aria-expanded="false" aria-label="Abrir menú">&#9776;</button>
       <nav class="main-nav" id="mainNav" role="navigation" aria-label="Principal">
         <ul>
-          <li><a href="<?= site_url('/') ?>">ON DEMAND</a></li>
-          <li><a href="<?= site_url('escarapela') ?>">escarapela</a></li>
-          <li><a href="<?= site_url('juegos') ?>">juegos</a></li>
+          <li>
+            <a href="<?= site_url('/') ?>" class="header-item <?= $current === '' ? 'active' : '' ?>" aria-current="<?= $current === '' ? 'page' : '' ?>">ON DEMAND</a>
+          </li>
+          <li>
+            <a href="<?= site_url('escarapela') ?>" class="header-item <?= $current === 'escarapela' ? 'active' : '' ?>" aria-current="<?= $current === 'escarapela' ? 'page' : '' ?>">Escarapela</a>
+          </li>
+          <li>
+            <a href="<?= site_url('juegos') ?>" class="header-item <?= $current === 'juegos' ? 'active' : '' ?>" aria-current="<?= $current === 'juegos' ? 'page' : '' ?>">Juegos</a>
+          </li>
         </ul>
       </nav>
     </div>
   </header>
+  
   <?= $this->renderSection('content') ?>
-
-
+  
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 
