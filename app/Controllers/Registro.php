@@ -17,7 +17,45 @@ class Registro extends BaseController
     {
         $data = [];
         $data['errors'] = session('errors');
+        // Allow pre-filling email when redirected from login
+        $data['email'] = $this->request->getGet('email') ?? null;
         echo view('registro/register', $data);
+    }
+
+    /**
+     * Show simple login form (asks only for email)
+     */
+    public function login()
+    {
+        $data = [];
+        $data['errors'] = session('errors');
+        // allow prefill from query param
+        $data['email'] = $this->request->getGet('email') ?? null;
+        echo view('registro/login', $data);
+    }
+
+    /**
+     * Process email submission: if email exists in inscritos, redirect home,
+     * otherwise redirect to registration with email prefilled.
+     */
+    public function checkEmail()
+    {
+        $email = $this->request->getPost('email');
+
+        if (! $this->validate(['email' => 'required|valid_email'])) {
+            return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
+        }
+
+        $found = $this->registroModel->where('email', $email)->first();
+
+        if ($found) {
+            // Email exists - for now redirect to home (could start a session)
+            return redirect()->to('/')->with('message', 'Email encontrado.');
+        }
+
+        // Not found - redirect to the registration form with email prefilled
+        $url = site_url('registro') . '?email=' . urlencode($email);
+        return redirect()->to($url);
     }
 
     public function store()
@@ -26,6 +64,15 @@ class Registro extends BaseController
 
         // Normalize checkbox
         $post['acepta_politica_datos'] = $this->request->getPost('acepta_politica_datos') ? 1 : 0;
+
+        // If email already exists, redirect to home (prevent duplicate)
+        $email = isset($post['email']) ? trim($post['email']) : null;
+        if ($email) {
+            $exists = $this->registroModel->where('email', $email)->first();
+            if ($exists) {
+                return redirect()->to('/')->with('message', 'El correo ya está registrado.');
+            }
+        }
 
         $rules = $this->registroModel->getRules();
 
@@ -43,6 +90,6 @@ class Registro extends BaseController
 
         $this->registroModel->insert($saveData);
 
-        return redirect()->to('/');
+        return redirect()->to('/')->with('message', 'Registro completado.');
     }
 }

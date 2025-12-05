@@ -10,6 +10,5 @@ class Inscrito extends Entity
     protected $casts = [
         'acepta_politica_datos' => 'int',
         'status' => 'int',
-        'user_id' => 'int',
     ];
 }

@@ -9,7 +9,7 @@ class RegistroModel extends Model
     protected $primaryKey = 'id';
     protected $returnType = 'App\Entities\Inscrito';
     protected $allowedFields = [
-        'user_id',
+        'id',
         'nombres',
         'apellidos',
         'cedula',

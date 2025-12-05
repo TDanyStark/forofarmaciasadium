@@ -103,7 +103,7 @@
 
                         <div class="col-md-6">
                             <label class="form-label">Email <span class="required">*</span></label>
-                            <input class="form-control" type="email" name="email" value="<?= esc(old('email')) ?>" required maxlength="255">
+                            <input class="form-control" type="email" name="email" value="<?= esc(old('email') ?? ($email ?? '')) ?>" required maxlength="255">
                         </div>
 
                         <div class="col-md-6">

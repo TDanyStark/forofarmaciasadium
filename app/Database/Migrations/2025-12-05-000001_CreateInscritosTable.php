@@ -14,12 +14,6 @@ class CreateInscritosTable extends Migration
                 'unsigned'       => true,
                 'auto_increment' => true,
             ],
-            'user_id' => [
-                'type'       => 'INT',
-                'constraint' => 11,
-                'unsigned'   => true,
-                'null'       => true,
-            ],
             'nombres' => [
                 'type'       => 'VARCHAR',
                 'constraint' => 255,
@@ -88,7 +82,6 @@ class CreateInscritosTable extends Migration
         ]);
 
         $this->forge->addKey('id', true);
-        $this->forge->addKey('user_id');
         $this->forge->createTable('inscritos');
 
         // Ensure the column has a proper database CURRENT_TIMESTAMP default

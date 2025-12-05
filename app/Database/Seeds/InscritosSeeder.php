@@ -40,7 +40,6 @@ class InscritosSeeder extends Seeder
             $registration = $this->parseDateTime($registrationRaw);
 
             $batch[] = [
-                'user_id' => $this->nullInt($row[1] ?? ''),
                 'nombres' => $this->nullString($row[2] ?? ''),
                 'apellidos' => $this->nullString($row[3] ?? ''),
                 'cedula' => $this->nullString($row[4] ?? ''),
