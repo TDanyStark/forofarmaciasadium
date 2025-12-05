@@ -1,0 +1,40 @@
+/* Shared styles for Foro Farmacias ADIUM */
+body {
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f8f9fa;
+}
+
+.box {
+  max-width: 480px;
+  margin: 50px auto;
+}
+
+.card-register {
+  max-width: 700px;
+  margin: 30px auto;
+}
+
+.required {
+  color: #d00;
+}
+
+.small-note {
+  font-size: .9rem;
+  color: #6c757d;
+}
+
+.text-adium {
+  color: #fa0032;
+  font-weight: bold;
+}
+
+.btn-adium, .btn-adium:focus, .btn-adium:active, .btn-adium:hover {
+  background-color: #fa0032;
+  color: #fff;
+  font-weight: bold;
+}
+
+.btn-adium:hover {
+  background-color: #dd002cff;
+  color: #fff;
+}
