@@ -12,6 +12,7 @@
     .site-header {
       background: #fff;
       border-bottom: 1px solid #e5e5e5;
+      padding: 15px 0;
     }
 
     .container-header {
@@ -80,25 +81,23 @@
 </head>
 
 <body>
-  <div>
-    <header class="site-header" role="banner">
-      <div class="container-header">
-        <a href="<?= site_url() ?>" class="brand">
-          <img src="<?= base_url('images/adium_black.png') ?>" alt="ADIUM" class="logo">
-        </a>
-        <button class="nav-toggle" aria-expanded="false" aria-label="Abrir menú">&#9776;</button>
-        <nav class="main-nav" id="mainNav" role="navigation" aria-label="Principal">
-          <ul>
-            <li><a href="<?= site_url('ondemand') ?>">ON DEMAND</a></li>
-            <li><a href="<?= site_url('escarapela') ?>">escarapela</a></li>
-            <li><a href="<?= site_url('juegos') ?>">juegos</a></li>
-          </ul>
-        </nav>
-      </div>
-    </header>
-    <?= $this->renderSection('content') ?>
+  <header class="site-header" role="banner">
+    <div class="container-header">
+      <a href="<?= site_url() ?>" class="brand">
+        <img src="<?= base_url('images/adium_black.png') ?>" alt="ADIUM" class="logo">
+      </a>
+      <button class="nav-toggle" aria-expanded="false" aria-label="Abrir menú">&#9776;</button>
+      <nav class="main-nav" id="mainNav" role="navigation" aria-label="Principal">
+        <ul>
+          <li><a href="<?= site_url('/') ?>">ON DEMAND</a></li>
+          <li><a href="<?= site_url('escarapela') ?>">escarapela</a></li>
+          <li><a href="<?= site_url('juegos') ?>">juegos</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  <?= $this->renderSection('content') ?>
 
-  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>

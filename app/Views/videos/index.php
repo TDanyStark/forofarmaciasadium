@@ -4,13 +4,13 @@
 
 <style>
     .videos-grid {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 16px;
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+        gap: 30px;
     }
 
     .video-card {
-        width: 240px;
+        width: 100%;
         text-align: center;
     }
 
@@ -21,11 +21,12 @@
     }
 
     .video-title {
-        font-size: 14px;
+        font-size: 1.2rem;
         margin-top: 8px;
+        text-wrap: balance;
     }
 </style>
-<main class="container">
+<main class="container py-5">
 
     <?php if (isset($videos['error'])): ?>
         <div class="error"><?= esc($videos['error']) ?></div>
