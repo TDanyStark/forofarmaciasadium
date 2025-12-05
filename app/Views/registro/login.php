@@ -10,12 +10,13 @@
 </head>
 
 <body>
-  <div class="container box">
-    <div class="text-center my-3">
-      <a href="<?= site_url() ?>">
-        <img src="<?= base_url('images/adium_black.png') ?>" alt="ADIUM" style="max-height:60px;" />
-      </a>
-    </div>
+<?= $this->extend('layouts/main') ?>
+
+<?php $title = 'Iniciar sesión - Foro Farmacias ADIUM'; ?>
+
+<?= $this->section('content') ?>
+
+  <div class="box">
     <div class="card shadow-sm mt-5">
       <div class="card-body p-4">
         <h4 class="mb-3 text-center">Iniciar sesión</h4>
@@ -47,6 +48,8 @@
       </div>
     </div>
   </div>
+
+<?= $this->endSection() ?>
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js"></script>
 </body>
