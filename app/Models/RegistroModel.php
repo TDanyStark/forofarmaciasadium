@@ -3,7 +3,7 @@ namespace App\Models;
 
 use CodeIgniter\Model;
 
-class InscritoModel extends Model
+class RegistroModel extends Model
 {
     protected $table = 'inscritos';
     protected $primaryKey = 'id';

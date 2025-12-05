@@ -8,6 +8,6 @@ use CodeIgniter\Router\RouteCollection;
 $routes->get('/', 'Home::index');
 
 // Rutas para registro de inscritos
-$routes->get('inscritos/create', 'Inscritos::create');
-$routes->post('inscritos/store', 'Inscritos::store');
-$routes->get('inscritos/thankyou', 'Inscritos::thankyou');
+$routes->get('registro', 'Registro::create');
+$routes->post('registro/store', 'Registro::store');
+$routes->get('registro/thankyou', 'Registro::thankyou');

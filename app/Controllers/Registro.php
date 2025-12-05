@@ -2,15 +2,14 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\InscritoModel;
+use App\Models\RegistroModel;
 
-class Inscritos extends BaseController
+class Registro extends BaseController
 {
-    protected $inscritoModel;
-
+    protected $registroModel;
     public function __construct()
     {
-        $this->inscritoModel = new InscritoModel();
+        $this->registroModel = new RegistroModel();
         helper(['form', 'url']);
     }
 
@@ -18,7 +17,7 @@ class Inscritos extends BaseController
     {
         $data = [];
         $data['errors'] = session('errors');
-        echo view('inscritos/register', $data);
+        echo view('registro/register', $data);
     }
 
     public function store()
@@ -28,7 +27,7 @@ class Inscritos extends BaseController
         // Normalize checkbox
         $post['acepta_politica_datos'] = $this->request->getPost('acepta_politica_datos') ? 1 : 0;
 
-        $rules = $this->inscritoModel->getRules();
+        $rules = $this->registroModel->getRules();
 
         if (! $this->validate($rules)) {
             return redirect()->back()->withInput()->with('errors', $this->validator->getErrors());
@@ -36,19 +35,19 @@ class Inscritos extends BaseController
 
         // Only save allowed fields
         $saveData = [];
-        foreach ($this->inscritoModel->allowedFields as $field) {
+        foreach ($this->registroModel->allowedFields as $field) {
             if (array_key_exists($field, $post)) {
                 $saveData[$field] = $post[$field];
             }
         }
 
-        $this->inscritoModel->insert($saveData);
+        $this->registroModel->insert($saveData);
 
-        return redirect()->to('/inscritos/thankyou');
+        return redirect()->to('/registro/thankyou');
     }
 
     public function thankyou()
     {
-        echo view('inscritos/thankyou');
+        echo view('registro/thankyou');
     }
 }
