@@ -43,3 +43,35 @@ body {
   background-color: var(--adium-red-dark);
   color: #fff;
 }
+
+/* Custom scrollbar: red theme */
+/* WebKit (Chrome, Edge, Safari) */
+*::-webkit-scrollbar {
+  width: 12px;
+  height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+*::-webkit-scrollbar-thumb {
+  background-color: var(--adium-red);
+  border-radius: 10px;
+  border: 3px solid #f1f1f1; /* gives a padding-like effect */
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background-color: var(--adium-red-dark);
+}
+
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--adium-red) #f1f1f1;
+}
+
+/* Provide a high-contrast fallback for older browsers by styling focused elements */
+a:focus, button:focus, input:focus, textarea:focus {
+  outline-color: var(--adium-red);
+}
