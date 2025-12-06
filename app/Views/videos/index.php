@@ -3,11 +3,12 @@
 <?php $this->section('content') ?>
 
 <style>
+    /* Mobile-first base styles */
     .videos-grid {
         display: grid;
-        /* Use a smaller min width so items can wrap on small screens */
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 30px;
+        grid-template-columns: 1fr;
+        gap: 16px;
+        padding: 0 0.5rem;
     }
 
     .video-card {
@@ -18,71 +19,85 @@
         width: 100%;
         height: auto;
         display: block;
+        border-radius: 6px;
     }
 
+    /* Stack content vertically on mobile for easy tap targets */
     .video-card-info {
         display: flex;
-        flex-direction: row;
-        justify-content: flex-start;
-        gap: 8px;
+        flex-direction: column;
+        gap: 6px;
+        padding: 0.5rem;
+        align-items: flex-start;
     }
 
     .video-orden {
-        font-size: 1.2rem;
+        font-size: 1rem;
         font-weight: 700;
         background-color: var(--adium-red);
-        padding: 2px 6px;
-        color: white;
-        border-radius: 100%;
+        padding: 4px 8px;
+        color: #fff;
+        border-radius: 999px;
         min-width: 30px;
         height: 30px;
-        text-align: center;
-        display: inline-block;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
     }
 
     .video-author {
-        font-size: 1.2rem;
+        font-size: 0.95rem;
         color: #666;
     }
 
     .video-title {
-        font-size: 1.6rem;
-        line-height: 1.9rem;
+        font-size: 1.1rem;
+        line-height: 1.3rem;
         font-weight: 600;
     }
 
-    /* On very small screens, force single column and reduce gaps */
-    @media (max-width: 480px) {
+    /* Small screens and up: allow multiple columns */
+    @media (min-width: 576px) {
         .videos-grid {
-            grid-template-columns: 1fr;
-            gap: 16px;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
         }
 
         .video-card-info {
-            padding-left: 0.75rem !important;
-            padding-right: 0.75rem !important;
-        }
-
-        .video-card {
-            overflow: hidden;
+            padding: 0.75rem;
         }
 
         .video-title {
-            font-size: 1.2rem;
-            line-height: 1.5rem;
-            font-weight: 600;
+            font-size: 1.25rem;
+            line-height: 1.6rem;
         }
 
         .video-author {
             font-size: 1rem;
-            color: #666;
         }
     }
 
-    /* On large screens prefer columns of 450px width */
+    /* Large screens: side-by-side layout for card info */
     @media (min-width: 992px) {
         .videos-grid {
             grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+            gap: 30px;
+        }
+
+        .video-card-info {
+            flex-direction: row;
+            gap: 12px;
+            align-items: center;
+            padding: 1rem 1rem 0.75rem;
+        }
+
+        .video-title {
+            font-size: 1.6rem;
+            line-height: 1.9rem;
+        }
+
+        .video-author {
+            font-size: 1.2rem;
         }
     }
 </style>

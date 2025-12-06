@@ -4,15 +4,19 @@ namespace App\Controllers;
 
 use CodeIgniter\Controller;
 use App\Models\VideoModel;
+use App\Models\VideoViewModel;
 
 class Videos extends BaseController
 {
     /** @var VideoModel */
     private $videoModel;
+    /** @var VideoViewModel */
+    private $videoViewModel;
 
     public function __construct()
     {
         $this->videoModel = new VideoModel();
+        $this->videoViewModel = new VideoViewModel();
     }
 
     /**
@@ -82,6 +86,23 @@ class Videos extends BaseController
             ],
             'orden' => $row['orden'] ?? null,
         ];
+
+        // Registro de vista: si el usuario está logueado, guardamos la vista
+        $session = session();
+        $user = $session->get('user');
+        if (! empty($user) && isset($user['id'])) {
+            $agent = $this->request->getUserAgent();
+            $userAgent = is_object($agent) && method_exists($agent, 'getAgentString') ? $agent->getAgentString() : (string) $agent;
+
+            // Insertamos una fila con la vista (no hacemos deduplicación aquí)
+            $this->videoViewModel->insert([
+                'user_id' => $user['id'],
+                'video_id' => $row['id'],
+                'ip' => $this->request->getIPAddress(),
+                'user_agent' => $userAgent,
+                'viewed_at' => date('Y-m-d H:i:s'),
+            ]);
+        }
 
         return view('videos/landing', [
             'video' => $snippet,
