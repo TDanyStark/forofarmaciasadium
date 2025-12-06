@@ -5,7 +5,8 @@
 <style>
     .videos-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        /* Use a smaller min width so items can wrap on small screens */
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
         gap: 30px;
     }
 
@@ -26,7 +27,7 @@
         gap: 8px;
     }
 
-    .video-orden{
+    .video-orden {
         font-size: 1.2rem;
         font-weight: 700;
         background-color: var(--adium-red);
@@ -39,7 +40,7 @@
         display: inline-block;
     }
 
-    .video-author{
+    .video-author {
         font-size: 1.2rem;
         color: #666;
     }
@@ -48,6 +49,41 @@
         font-size: 1.6rem;
         line-height: 1.9rem;
         font-weight: 600;
+    }
+
+    /* On very small screens, force single column and reduce gaps */
+    @media (max-width: 480px) {
+        .videos-grid {
+            grid-template-columns: 1fr;
+            gap: 16px;
+        }
+
+        .video-card-info {
+            padding-left: 0.75rem !important;
+            padding-right: 0.75rem !important;
+        }
+
+        .video-card {
+            overflow: hidden;
+        }
+
+        .video-title {
+            font-size: 1.2rem;
+            line-height: 1.5rem;
+            font-weight: 600;
+        }
+
+        .video-author {
+            font-size: 1rem;
+            color: #666;
+        }
+    }
+
+    /* On large screens prefer columns of 450px width */
+    @media (min-width: 992px) {
+        .videos-grid {
+            grid-template-columns: repeat(auto-fill, minmax(450px, 1fr));
+        }
     }
 </style>
 <main class="container py-5">
