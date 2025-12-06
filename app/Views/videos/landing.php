@@ -31,6 +31,7 @@
         <div>No se encontró información del video.</div>
     <?php else: ?>
         <h1><?= esc($video['title']) ?></h1>
+        <p class="text-muted">Por: <?= esc($video['author'] ?? $video['channelTitle'] ?? 'Autor desconocido') ?></p>
 
         <div class="video-player">
             <iframe src="https://www.youtube.com/embed/<?= esc($id) ?>" allowfullscreen allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture"></iframe>
