@@ -3,10 +3,13 @@
 namespace App\Controllers;
 
 use CodeIgniter\Controller;
+use App\Models\VideoModel;
 
 class Videos extends BaseController
 {
     private $apiKey;
+    /** @var VideoModel */
+    private $videoModel;
     /**
      * Map of custom overrides for videos by ID.
      * Each entry can contain 'title' and/or 'author'.
@@ -26,6 +29,7 @@ class Videos extends BaseController
     public function __construct()
     {
         $this->apiKey = env('YOUTUBE_API_KEY');
+        $this->videoModel = new VideoModel();
     }
 
     /**
@@ -33,7 +37,86 @@ class Videos extends BaseController
      * @param array $ids
      * @return array
      */
+    /**
+     * Primary fetch method: get data from DB, fallback to YouTube for missing IDs and persist them.
+     * Returns an array keyed by id_youtube with 'title', 'author', 'thumbnails' and optional 'orden'.
+     */
     private function fetchVideos(array $ids): array
+    {
+        // Query DB for existing entries
+        $rows = $this->videoModel->whereIn('id_youtube', $ids)->findAll();
+        $videos = [];
+        $foundIds = [];
+
+        foreach ($rows as $row) {
+            $id = $row['id_youtube'];
+            $foundIds[] = $id;
+            $videos[$id] = [
+                'title' => $row['nombre'],
+                'author' => $row['author'],
+                'thumbnails' => [
+                    'medium' => ['url' => $row['thumbnail'] ?: ('https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg')]
+                ],
+                'orden' => $row['orden'] ?? null,
+            ];
+        }
+
+        $missing = array_diff($ids, $foundIds);
+        if (!empty($missing)) {
+            // Fetch missing from YouTube and persist
+            $yt = $this->fetchVideosFromYouTube(array_values($missing));
+            if (isset($yt['error'])) {
+                // preserve what we have and return error information
+                $videos['error'] = $yt['error'];
+                return $videos;
+            }
+
+            foreach ($yt as $id => $snippet) {
+                $title = $snippet['title'] ?? '';
+                $author = $snippet['author'] ?? ($snippet['channelTitle'] ?? '');
+                $thumb = $snippet['thumbnails']['medium']['url'] ?? ($snippet['thumbnails']['default']['url'] ?? ('https://i.ytimg.com/vi/' . $id . '/hqdefault.jpg'));
+
+                // Insert or update DB record
+                $existing = $this->videoModel->where('id_youtube', $id)->first();
+                $data = [
+                    'nombre' => $title,
+                    'orden' => null,
+                    'id_youtube' => $id,
+                    'author' => $author,
+                    'thumbnail' => $thumb,
+                ];
+
+                if (!$existing) {
+                    $this->videoModel->insert($data);
+                } else {
+                    $update = [];
+                    if (empty($existing['thumbnail']) && !empty($thumb)) {
+                        $update['thumbnail'] = $thumb;
+                    }
+                    if (empty($existing['nombre']) && !empty($title)) {
+                        $update['nombre'] = $title;
+                    }
+                    if (!empty($update)) {
+                        $this->videoModel->update($existing['id'], $update);
+                    }
+                }
+
+                $videos[$id] = [
+                    'title' => $title,
+                    'author' => $author,
+                    'thumbnails' => ['medium' => ['url' => $thumb]],
+                ];
+            }
+        }
+
+        return $videos;
+    }
+
+    /**
+     * Low-level call to YouTube Data API v3 for a list of ids.
+     * Returns an associative array keyed by video id with snippet-like data, or ['error'=>..].
+     */
+    private function fetchVideosFromYouTube(array $ids): array
     {
         if (empty($this->apiKey)) {
             return ['error' => 'YOUTUBE_API_KEY no configurada. Añade YOUTUBE_API_KEY en tu archivo .env'];
@@ -42,7 +125,6 @@ class Videos extends BaseController
         $idsStr = implode(',', $ids);
         $url = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=' . urlencode($idsStr) . '&key=' . urlencode($this->apiKey);
 
-        // Usar file_get_contents con stream context en lugar de cURL
         $context = stream_context_create([
             'http' => [
                 'method' => 'GET',
@@ -71,7 +153,10 @@ class Videos extends BaseController
         if (isset($data['items'])) {
             foreach ($data['items'] as $item) {
                 $id = $item['id'];
-                $videos[$id] = $item['snippet'];
+                $snippet = $item['snippet'];
+                // normalize author and keep snippet structure for compatibility
+                $snippet['author'] = $snippet['channelTitle'] ?? '';
+                $videos[$id] = $snippet;
             }
         }
 
