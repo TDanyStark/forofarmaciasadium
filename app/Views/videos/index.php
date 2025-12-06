@@ -27,7 +27,7 @@
         display: flex;
         flex-direction: column;
         gap: 6px;
-        padding: 0.5rem;
+        padding: 1rem;
         align-items: flex-start;
     }
 
@@ -43,6 +43,7 @@
         display: inline-flex;
         align-items: center;
         justify-content: center;
+        margin-top: 4px;
     }
 
     .video-author {
@@ -54,6 +55,18 @@
         font-size: 1.1rem;
         line-height: 1.3rem;
         font-weight: 600;
+    }
+
+    .article-video{
+        display: inline-block;
+        border-radius: 6px;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.2s ease-in-out;
+    }
+
+    .article-video:hover {
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);   
     }
 
     /* Small screens and up: allow multiple columns */
@@ -87,17 +100,18 @@
         .video-card-info {
             flex-direction: row;
             gap: 12px;
-            align-items: center;
-            padding: 1rem 1rem 0.75rem;
+            align-items: flex-start;
+            padding: 1rem 1rem 1.2rem 1rem;
         }
 
         .video-title {
-            font-size: 1.6rem;
-            line-height: 1.9rem;
+            font-size: 1.5rem;
+            line-height: 1.8rem;
         }
 
         .video-author {
             font-size: 1.2rem;
+            margin-top: 4px;
         }
     }
 </style>
@@ -127,16 +141,16 @@
                 }
             ?>
                 <div class="video-card">
-                    <a href="<?= site_url('video/' . $id) ?>">
+                    <a class="article-video" href="<?= site_url('video/' . $id) ?>">
                         <img class="rounded" src="<?= esc($thumb) ?>" alt="<?= esc($title) ?>">
-                    </a>
-                    <div class="video-card-info p-4 pt-2">
-                        <span class="video-orden"><?= esc($orden) ?></span>
-                        <div>
-                            <div class="video-title"><?= esc($title) ?></div>
-                            <div class="video-author"><?= esc($autor) ?></div>
+                        <div class="video-card-info">
+                            <span class="video-orden"><?= esc($orden) ?></span>
+                            <div>
+                                <div class="video-title"><?= esc($title) ?></div>
+                                <div class="video-author"><?= esc($autor) ?></div>
+                            </div>
                         </div>
-                    </div>
+                    </a>
                 </div>
             <?php endforeach; ?>
         <?php endif; ?>

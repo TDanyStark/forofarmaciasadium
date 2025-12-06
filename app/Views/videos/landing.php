@@ -17,6 +17,8 @@
     .video-player {
         position: relative;
         padding-top: 56.25%;
+        border-radius: 10px;
+        overflow: clip;
     }
 
     .video-player iframe {
