@@ -25,7 +25,7 @@
 
           <div class="mb-3">
             <label class="form-label">Email</label>
-            <input class="form-control" type="email" name="email" value="<?= esc(old('email') ?? ($email ?? '')) ?>" required>
+            <input autocomplete="email" class="form-control" type="email" name="email" value="<?= esc(old('email') ?? ($email ?? '')) ?>" required>
           </div>
 
           <div class="d-flex justify-content-between align-items-center">

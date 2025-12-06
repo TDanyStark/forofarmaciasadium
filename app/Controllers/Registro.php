@@ -15,6 +15,10 @@ class Registro extends BaseController
 
     public function create()
     {
+        // If already logged in, send to home
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to('/');
+        }
         $data = [];
         $data['errors'] = session('errors');
         // Allow pre-filling email when redirected from login
@@ -27,6 +31,10 @@ class Registro extends BaseController
      */
     public function login()
     {
+        // If already logged in, send to home
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to('/');
+        }
         $data = [];
         $data['errors'] = session('errors');
         // allow prefill from query param
@@ -49,8 +57,16 @@ class Registro extends BaseController
         $found = $this->registroModel->where('email', $email)->first();
 
         if ($found) {
-            // Email exists - for now redirect to home (could start a session)
-            return redirect()->to('/')->with('message', 'Email encontrado.');
+            // Email exists - start session and redirect home
+            $session = session();
+            // store minimal user info; entity -> toArray()
+            $userData = is_object($found) && method_exists($found, 'toArray') ? $found->toArray() : (array) $found;
+            $session->set([
+                'isLoggedIn' => true,
+                'user' => $userData,
+            ]);
+
+            return redirect()->to('/')->with('message', 'Sesión iniciada.');
         }
 
         // Not found - redirect to the registration form with email prefilled
@@ -89,6 +105,18 @@ class Registro extends BaseController
         }
 
         $this->registroModel->insert($saveData);
+
+        // Log the user in after successful registration
+        $insertId = $this->registroModel->getInsertID();
+        $user = $this->registroModel->find($insertId);
+        if ($user) {
+            $session = session();
+            $userData = is_object($user) && method_exists($user, 'toArray') ? $user->toArray() : (array) $user;
+            $session->set([
+                'isLoggedIn' => true,
+                'user' => $userData,
+            ]);
+        }
 
         return redirect()->to('/')->with('message', 'Registro completado.');
     }
