@@ -57,26 +57,38 @@
     <?php endif; ?>
 
     <div class="videos-grid">
-        <?php foreach ($videoIds as $id):
-            $snippet = $videos[$id] ?? null;
-            $title = $snippet['title'] ?? 'Video';
-            $orden = $snippet['orden'] ?? '';
-            $autor = $snippet['author'] ?? $snippet['channelTitle'] ?? 'Autor desconocido';
-            $thumb = $snippet['thumbnails']['medium']['url'] ?? 'https://img.youtube.com/vi/' . $id . '/hqdefault.jpg';
-        ?>
-            <div class="video-card">
-                <a href="<?= site_url('video/' . $id) ?>">
-                    <img class="rounded" src="<?= esc($thumb) ?>" alt="<?= esc($title) ?>">
-                </a>
-                <div class="video-card-info p-4 pt-2">
-                    <span class="video-orden"><?= esc($orden) ?></span>
-                    <div>
-                        <div class="video-title"><?= esc($title) ?></div>
-                        <div class="video-author"><?= esc($autor) ?></div>
+        <?php if (empty($videos)): ?>
+            <div class="col-12">No hay videos para mostrar.</div>
+        <?php else: ?>
+            <?php foreach ($videos as $id => $snippet):
+                // Support both database shape and YouTube-like snippet shape
+                $title = $snippet['title'] ?? 'Video';
+                $orden = $snippet['orden'] ?? '';
+                $autor = $snippet['author'] ?? 'Autor desconocido';
+                // Prefer explicit thumbnail field (from DB) but fall back to nested thumbnails
+                if (!empty($snippet['thumbnail'])) {
+                    $thumb = $snippet['thumbnail'];
+                } elseif (!empty($snippet['thumbnails']['medium']['url'])) {
+                    $thumb = $snippet['thumbnails']['medium']['url'];
+                } else {
+                    // Fallback to YouTube-hosted thumbnail when id looks like a youtube id
+                    $thumb = 'https://img.youtube.com/vi/' . $id . '/hqdefault.jpg';
+                }
+            ?>
+                <div class="video-card">
+                    <a href="<?= site_url('video/' . $id) ?>">
+                        <img class="rounded" src="<?= esc($thumb) ?>" alt="<?= esc($title) ?>">
+                    </a>
+                    <div class="video-card-info p-4 pt-2">
+                        <span class="video-orden"><?= esc($orden) ?></span>
+                        <div>
+                            <div class="video-title"><?= esc($title) ?></div>
+                            <div class="video-author"><?= esc($autor) ?></div>
+                        </div>
                     </div>
                 </div>
-            </div>
-        <?php endforeach; ?>
+            <?php endforeach; ?>
+        <?php endif; ?>
     </div>
 
 </main>
