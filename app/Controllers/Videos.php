@@ -171,26 +171,30 @@ class Videos extends BaseController
         'viewed_at' => date('Y-m-d H:i:s'),
       ]);
 
-      // Después de registrar la vista, comprobamos si el usuario alcanza el 60% de sesiones
+      // Después de registrar la vista, comprobamos si el usuario alcanzó 4 vistas distintas
       try {
-        // Conteo de sesiones vistas (distintas)
         $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
         $viewedVideoIds = array_unique(array_column($views, 'video_id'));
         $viewedCount = count($viewedVideoIds);
 
-        // Total de videos disponibles
-        $totalVideos = (int) $this->videoModel->countAll();
-        $threshold = (int) ceil($totalVideos * 0.6);
-
-        if ($totalVideos > 0 && $viewedCount >= $threshold) {
-          $certService = new \App\Libraries\CertificadoService();
-          // Ensure the certificate exists (the service will create directory & file if possible)
-          if ($certService->isEligible($user)) {
-            $certService->ensureCertificateExists($user);
+        // Si el usuario alcanzó 4 vistas distintas, registramos su elegibilidad en la tabla `certificados`.
+        // No generamos el PDF aquí; la generación ocurrirá cuando visite /certificado y exista el registro.
+        if ($viewedCount >= 4) {
+          $certModel = new \App\Models\CertificadoModel();
+          $existing = $certModel->where('user_id', $user['id'])->first();
+          if (empty($existing)) {
+            $certModel->insert([
+              'user_id' => $user['id'],
+              'first_name' => $user['nombres'] ?? '',
+              'last_name' => $user['apellidos'] ?? '',
+              'email' => $user['email'] ?? ($user['correo'] ?? ''),
+              'is_downloaded' => 0,
+              'download_date' => null,
+            ]);
           }
         }
       } catch (\Exception $e) {
-        // No interrumpimos la experiencia si hay error en la generación
+        // No interrumpimos la experiencia si hay error al registrar elegibilidad
       }
     }
 

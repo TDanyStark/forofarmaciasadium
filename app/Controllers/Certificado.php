@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Controllers;
 
 use CodeIgniter\Controller;
@@ -22,29 +23,38 @@ class Certificado extends BaseController
         $viewedCount = count(array_unique(array_column($views, 'video_id')));
         $threshold = (int) ceil($totalVideos * 0.6);
 
-        // Construir ruta donde el certificado personalizado debería haberse guardado
-        $nombres = trim($user['nombres'] ?? '');
-        $apellidos = trim($user['apellidos'] ?? '');
-        $primerNombre = '';
-        $primerApellido = '';
-        if ($nombres !== '') {
-            $parts = preg_split('/\s+/', $nombres);
-            $primerNombre = $parts[0] ?? '';
-        }
-        if ($apellidos !== '') {
-            $parts = preg_split('/\s+/', $apellidos);
-            $primerApellido = $parts[0] ?? '';
-        }
 
-        // Use centralized service to compute path and eligibility
+        // Comprobamos si el usuario fue registrado en la tabla `certificados` (elegible)
+        $certModel = new \App\Models\CertificadoModel();
+        $certRow = $certModel->where('user_id', $user['id'])->first();
+
         $certService = new \App\Libraries\CertificadoService();
         $destPath = $certService->getDestPath($user);
 
-        if ($totalVideos > 0 && $viewedCount >= $threshold && file_exists($destPath)) {
-            return $this->response->download($destPath, null);
+        if (empty($certRow)) {
+            // Usuario no registrado como elegible: mostramos la vista informativa
+            return view('certificado/index', [
+                'viewedCount' => $viewedCount,
+                'totalVideos' => $totalVideos,
+                'threshold' => $threshold,
+            ]);
         }
 
-        // No es elegible o aún no se creó el PDF: mostramos una vista informativa
+        // Usuario registrado en `certificados`: generamos (si hace falta) y servimos el PDF
+        $pdfPath = $certService->ensureCertificateExists($user);
+        if ($pdfPath && file_exists($pdfPath)) {
+            try {
+                $certModel->update($certRow['id'], [
+                    'is_downloaded' => 1,
+                    'download_date' => date('Y-m-d H:i:s'),
+                ]);
+            } catch (\Exception $_) {
+                // No bloquear la descarga si la actualización falla
+            }
+            return $this->response->download($pdfPath, null);
+        }
+
+        // Si no se pudo crear aún el PDF, mostramos la vista informativa
         return view('certificado/index', [
             'viewedCount' => $viewedCount,
             'totalVideos' => $totalVideos,
