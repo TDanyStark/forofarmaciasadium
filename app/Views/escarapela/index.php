@@ -2,7 +2,201 @@
 
 <?= $this->section('content') ?>
 <script type="module"
-  crossorigin>(function () { const l = document.createElement("link").relList; if (l && l.supports && l.supports("modulepreload")) return; for (const t of document.querySelectorAll('link[rel="modulepreload"]')) p(t); new MutationObserver(t => { for (const e of t) if (e.type === "childList") for (const n of e.addedNodes) n.tagName === "LINK" && n.rel === "modulepreload" && p(n) }).observe(document, { childList: !0, subtree: !0 }); function f(t) { const e = {}; return t.integrity && (e.integrity = t.integrity), t.referrerPolicy && (e.referrerPolicy = t.referrerPolicy), t.crossOrigin === "use-credentials" ? e.credentials = "include" : t.crossOrigin === "anonymous" ? e.credentials = "omit" : e.credentials = "same-origin", e } function p(t) { if (t.ep) return; t.ep = !0; const e = f(t); fetch(t.href, e) } })(); (function () { function _(l) { try { return JSON.parse(l) } catch { return null } } document.addEventListener("DOMContentLoaded", function () { const l = { name: "attendee test" }, f = _(localStorage.getItem("user_info")), p = f && f.name ? f : l, t = document.getElementById("badgeID_badge-name"), e = document.getElementById("badgeID_badge"), n = e ? e.querySelector(".badgeID_badge-image") : null, r = e ? e.querySelector(".badgeID_badge-overlay") : null; if (t && (t.textContent = p.name || ""), !e) return; const D = 10; e.style.transformStyle = "preserve-3d"; const v = "transform 220ms ease, box-shadow 220ms ease"; e.style.transition = v; let d = !1, b = null, $ = null; const S = 5e3; function A() { d = !0, $ && (clearTimeout($), $ = null), b && (clearInterval(b), b = null), e.style.transition = v } function w() { if (d) return; const o = 1200, a = `transform ${o}ms cubic-bezier(0.22,0.8,0.2,1), box-shadow ${o}ms ease`; e.style.transition = a, n && (n.style.transition = `transform ${o}ms ease`), r && (r.style.transition = `transform ${o}ms ease`); const c = 3, u = -3; requestAnimationFrame(() => { requestAnimationFrame(() => { e.style.transform = `perspective(1000px) rotateX(${c}deg) rotateY(${u}deg)`, n && (n.style.transform = "translateZ(30px) translate(3px, -3px) scale(1.02)"), r && (r.style.transform = "translateZ(60px) translate(2px, -2px)") }) }), setTimeout(() => { if (d) return; const i = 900, m = `transform ${i}ms cubic-bezier(0.22,0.8,0.2,1), box-shadow ${i}ms ease`; e.style.transition = m, n && (n.style.transition = `transform ${i}ms ease`), r && (r.style.transition = `transform ${i}ms ease`), e.style.transform = "", n && (n.style.transform = ""), r && (r.style.transform = ""), setTimeout(() => { d || (e.style.transition = v, n && (n.style.transition = ""), r && (r.style.transition = "")) }, i) }, 2200) } $ = setTimeout(() => { d || (w(), b = setInterval(w, S)) }, S), e.addEventListener("mousemove", function (o) { d || A(); const a = e.getBoundingClientRect(), c = o.clientX - a.left, u = o.clientY - a.top, i = a.width / 2, m = a.height / 2, y = (c - i) / i, g = (u - m) / m, E = g * D, x = y * -D; e.style.transform = `perspective(1000px) rotateX(${E}deg) rotateY(${x}deg)`; const h = 30, I = 60; n && (n.style.transform = `translateZ(${h}px) translate(${y * 10}px, ${g * 10}px) scale(1.02)`), r && (r.style.transform = `translateZ(${I}px) translate(${y * 6}px, ${g * 6}px)`) }), e.addEventListener("mouseleave", function () { e.style.transform = "", n && (n.style.transform = ""), r && (r.style.transform = "") }); const T = e.querySelector(".user-info"); T && (T.style.pointerEvents = "auto"); const q = localStorage.getItem("_token"); q && (async function () { try { const o = `https://api.vfairs.com/v3/user/get-user-by-token?token=${encodeURIComponent(q)}&secret=secret_user`, a = await fetch(o, { method: "GET", credentials: "omit" }); if (!a.ok) throw new Error("Network response was not ok: " + a.status); const c = await a.json(), u = c && c.data && c.data.user_info && c.data.user_info.extracted_cv; if (!u) return; const i = u.split(/\r?\n/).map(s => s.trim()).filter(Boolean), m = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s), y = s => /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(s) || /\d{4}-\d{2}-\d{2}/.test(s), g = s => /^(masculino|femenino|male|female)$/i.test(s), E = s => /^(attendee|test|attest)$/i.test(s) || /^\d+$/.test(s), x = i.filter(s => !m(s) && !y(s) && !g(s) && !E(s)), h = x[0] || "", I = x[1] || "", L = document.getElementById("badgeID_badge-city") || r && r.querySelector("#badgeID_badge-city") || e.querySelector("#badgeID_badge-city"), O = document.getElementById("badgeID_badge-pharmacy") || r && r.querySelector("#badgeID_badge-pharmacy") || e.querySelector("#badgeID_badge-pharmacy"); L && (L.textContent = h ? `${h}` : ""), O && (O.textContent = I ? `${I}` : "") } catch (o) { console.error("Error fetching/parsing vFairs token info", o) } })() }) })();</script>
+  crossorigin>
+  // badge-3d.js
+  // Reads localStorage.user_info and applies 3D mouse interactions to the #badge element
+  (function() {
+    function safeParse(str) {
+      try {
+        return JSON.parse(str);
+      } catch (e) {
+        return null;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+      // default user (email intentionally omitted — we don't display email in the badge)
+      const defaultUser = {
+        name: "attendee test",
+        uuid: "1238784424",
+        logo: ""
+      };
+      const stored = safeParse(localStorage.getItem('user_info'));
+      const user = stored && stored.name ? stored : defaultUser;
+
+      const nameEl = document.getElementById('badgeID_badge-name');
+      const badge = document.getElementById('badgeID_badge');
+      const image = badge ? badge.querySelector('.badgeID_badge-image') : null;
+      const overlay = badge ? badge.querySelector('.badgeID_badge-overlay') : null;
+
+      if (nameEl) nameEl.textContent = user.name || '';
+
+      if (!badge) return;
+
+      // 3D interaction
+      const maxRot = 10; // degrees
+      badge.style.transformStyle = 'preserve-3d';
+      // base transition used during user interaction (restored after auto animation)
+      const baseTransition = 'transform 220ms ease, box-shadow 220ms ease';
+      badge.style.transition = baseTransition;
+
+      // Auto-animation (before first mouse entry): gentle 3D tilt every 5s
+      let mouseEntered = false;
+      let autoInterval = null;
+      let autoStartTimer = null;
+      const AUTO_DELAY = 5000; // milliseconds
+
+      function stopAutoAnimation() {
+        mouseEntered = true;
+        if (autoStartTimer) {
+          clearTimeout(autoStartTimer);
+          autoStartTimer = null;
+        }
+        if (autoInterval) {
+          clearInterval(autoInterval);
+          autoInterval = null;
+        }
+        // ensure any temporary transition used for auto animation is reset
+        badge.style.transition = baseTransition;
+      }
+
+      function animateAutoOnce() {
+        if (mouseEntered) return;
+        // softer, slower transition for a gentler auto move
+        const enterDur = 1200; // ms
+        const enterTransition = `transform ${enterDur}ms cubic-bezier(0.22,0.8,0.2,1), box-shadow ${enterDur}ms ease`;
+        badge.style.transition = enterTransition;
+        if (image) image.style.transition = `transform ${enterDur}ms ease`;
+        if (overlay) overlay.style.transition = `transform ${enterDur}ms ease`;
+
+        // reduce tilt values for a subtler effect
+        const tiltX = 3; // degrees
+        const tiltY = -3; // degrees
+
+        // apply transforms on the next paint to ensure the transition is active (avoids initial 'jump')
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            badge.style.transform = `perspective(1000px) rotateX(${tiltX}deg) rotateY(${tiltY}deg)`;
+            // matching very subtle parallax on inner elements
+            if (image) image.style.transform = `translateZ(30px) translate(${3}px, ${-3}px) scale(1.02)`;
+            if (overlay) overlay.style.transform = `translateZ(60px) translate(${2}px, ${-2}px)`;
+          });
+        });
+
+        // return to neutral after a longer, gentle pause
+        setTimeout(() => {
+          if (mouseEntered) return;
+          // set a dedicated, smooth return transition so the reset doesn't feel abrupt
+          const returnDur = 900; // ms
+          const returnTransition = `transform ${returnDur}ms cubic-bezier(0.22,0.8,0.2,1), box-shadow ${returnDur}ms ease`;
+          badge.style.transition = returnTransition;
+          if (image) image.style.transition = `transform ${returnDur}ms ease`;
+          if (overlay) overlay.style.transition = `transform ${returnDur}ms ease`;
+
+          // clear transforms to smoothly return to neutral
+          badge.style.transform = '';
+          if (image) image.style.transform = '';
+          if (overlay) overlay.style.transform = '';
+
+          // after the return completes, restore the baseTransition and clear temporary inner transitions
+          setTimeout(() => {
+            if (!mouseEntered) {
+              badge.style.transition = baseTransition;
+              if (image) image.style.transition = '';
+              if (overlay) overlay.style.transition = '';
+            }
+          }, returnDur);
+        }, 2200);
+      }
+
+      // schedule first auto animation after AUTO_DELAY, then every AUTO_DELAY
+      autoStartTimer = setTimeout(() => {
+        if (mouseEntered) return;
+        animateAutoOnce();
+        autoInterval = setInterval(animateAutoOnce, AUTO_DELAY);
+      }, AUTO_DELAY);
+
+      badge.addEventListener('mousemove', function(e) {
+        // First mouse movement should stop the auto animation
+        if (!mouseEntered) {
+          stopAutoAnimation();
+        }
+
+        const rect = badge.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const cx = rect.width / 2;
+        const cy = rect.height / 2;
+        const dx = (x - cx) / cx; // -1 .. 1
+        const dy = (y - cy) / cy; // -1 .. 1
+        const rotateX = dy * maxRot;
+        const rotateY = dx * -maxRot;
+        badge.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+
+        // parallax
+        const imgZ = 30;
+        const overlayZ = 60;
+        if (image) image.style.transform = `translateZ(${imgZ}px) translate(${dx*10}px, ${dy*10}px) scale(1.02)`;
+        if (overlay) overlay.style.transform = `translateZ(${overlayZ}px) translate(${dx*6}px, ${dy*6}px)`;
+      });
+
+      badge.addEventListener('mouseleave', function() {
+        badge.style.transform = '';
+        if (image) image.style.transform = '';
+        if (overlay) overlay.style.transform = '';
+      });
+
+      // make overlay clickable (optional UX): allow selecting/copying other info
+      const userInfo = badge.querySelector('.user-info');
+      if (userInfo) userInfo.style.pointerEvents = 'auto';
+
+      // --- Fetch additional user details by token and parse extracted_cv ---
+      // Read token saved in localStorage under key `_token` and call vFairs API
+      const token = localStorage.getItem('_token');
+      if (token) {
+        (async function() {
+          try {
+            const url = `https://api.vfairs.com/v3/user/get-user-by-token?token=${encodeURIComponent(token)}&secret=secret_user`;
+            const res = await fetch(url, {
+              method: 'GET',
+              credentials: 'omit'
+            });
+            if (!res.ok) throw new Error('Network response was not ok: ' + res.status);
+            const body = await res.json();
+
+            const extracted = body && body.data && body.data.user_info && body.data.user_info.extracted_cv;
+            if (!extracted) return;
+
+            // Normalize into lines, remove empty lines and email lines
+            const lines = extracted.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
+
+            const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
+            const isDate = s => /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(s) || /\d{4}-\d{2}-\d{2}/.test(s);
+            const isGender = s => /^(masculino|femenino|male|female)$/i.test(s);
+            const isNoiseToken = s => /^(attendee|test|attest)$/i.test(s) || /^\d+$/.test(s);
+
+            const cleaned = lines.filter(l => !isEmail(l) && !isDate(l) && !isGender(l) && !isNoiseToken(l));
+
+            // Heuristic: after removing emails/dates/genders/noise, use first two remaining lines as ciudad and farmacia
+            const ciudad = cleaned[0] || '';
+            const farmacia = cleaned[1] || '';
+
+            // Prefer direct id lookup; fall back to querying inside the badge.
+            const ciudadEl = document.getElementById('badgeID_badge-city') || (overlay && overlay.querySelector('#badgeID_badge-city')) || badge.querySelector('#badgeID_badge-city');
+            const farmaciaEl = document.getElementById('badgeID_badge-pharmacy') || (overlay && overlay.querySelector('#badgeID_badge-pharmacy')) || badge.querySelector('#badgeID_badge-pharmacy');
+
+            if (ciudadEl) ciudadEl.textContent = ciudad ? `${ciudad}` : '';
+            if (farmaciaEl) farmaciaEl.textContent = farmacia ? `${farmacia}` : '';
+
+          } catch (err) {
+            // don't break the rest of the badge script on API errors
+            console.error('Error fetching/parsing vFairs token info', err);
+          }
+        })();
+      }
+    });
+  })();
+</script>
 <style rel="stylesheet" crossorigin>
   :root {
     --gray: #747d84;
@@ -89,7 +283,7 @@
   <div class="badgeID_badge-wrap">
     <div class="badgeID_badge" id="badgeID_badge">
       <img
-        src="https://vepimg.b8cdn.com/uploads/vjfnew/22331/content/files/176254824807-11-2025-escarapelas-foro-gastroenterologi-a-png1762548248.png"
+        src="<?= base_url('images/176254824807-11-2025-escarapelas-foro-gastroenterologi-a-png1762548248.png') ?>"
         alt="badge image" class="badgeID_badge-image" />
       <div class="badgeID_badge-overlay">
         <div class="badgeID_user-info">
