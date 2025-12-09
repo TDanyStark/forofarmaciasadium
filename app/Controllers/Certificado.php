@@ -36,25 +36,11 @@ class Certificado extends BaseController
             $primerApellido = $parts[0] ?? '';
         }
 
-        // Sanitizar igual que en Videos controller
-        $sanitize = function ($str) use ($user) {
-            $s = (string) $str;
-            $trans = @iconv('UTF-8', 'ASCII//TRANSLIT', $s);
-            if ($trans !== false) {
-                $s = $trans;
-            }
-            $s = preg_replace('/[^A-Za-z0-9]+/', '_', $s);
-            $s = trim($s, '_');
-            return $s === '' ? 'user' . ($user['id'] ?? '0') : $s;
-        };
-
-        $safeFirst = $sanitize($primerNombre);
-        $safeLast = $sanitize($primerApellido);
-
-        $destPath = WRITEPATH . 'uploads/certificados/' . $user['id'] . '/certificado_foro_' . $safeFirst . '_' . $safeLast . '.pdf';
+        // Use centralized service to compute path and eligibility
+        $certService = new \App\Libraries\CertificadoService();
+        $destPath = $certService->getDestPath($user);
 
         if ($totalVideos > 0 && $viewedCount >= $threshold && file_exists($destPath)) {
-            // Forzamos la descarga del certificado
             return $this->response->download($destPath, null);
         }
 

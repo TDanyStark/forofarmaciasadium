@@ -183,95 +183,10 @@ class Videos extends BaseController
         $threshold = (int) ceil($totalVideos * 0.6);
 
         if ($totalVideos > 0 && $viewedCount >= $threshold) {
-          // Crear certificado personalizado en subcarpeta por usuario
-          $destDir = WRITEPATH . 'uploads/certificados/' . $user['id'] . '/';
-          if (! is_dir($destDir)) {
-            mkdir($destDir, 0755, true);
-          }
-
-          // Preparar nombres (primer nombre + primer apellido) y sanitizar para filename
-          $nombres = trim($user['nombres'] ?? '');
-          $apellidos = trim($user['apellidos'] ?? '');
-          $primerNombre = '';
-          $primerApellido = '';
-          if ($nombres !== '') {
-            $parts = preg_split('/\s+/', $nombres);
-            $primerNombre = $parts[0] ?? '';
-          }
-          if ($apellidos !== '') {
-            $parts = preg_split('/\s+/', $apellidos);
-            $primerApellido = $parts[0] ?? '';
-          }
-
-          // Sanitizar para evitar caracteres inválidos en filename
-          $sanitize = function ($str) use ($user) {
-            $s = (string) $str;
-            // intentar transliterar a ASCII
-            $trans = @iconv('UTF-8', 'ASCII//TRANSLIT', $s);
-            if ($trans !== false) {
-              $s = $trans;
-            }
-            // reemplazar todo lo que no sea letra/dígito por guión bajo
-            $s = preg_replace('/[^A-Za-z0-9]+/', '_', $s);
-            $s = trim($s, '_');
-            return $s === '' ? 'user' . ($user['id'] ?? '0') : $s;
-          };
-
-          $safeFirst = $sanitize($primerNombre);
-          $safeLast = $sanitize($primerApellido);
-
-          $filename = 'certificado_foro_' . $safeFirst . '_' . $safeLast . '.pdf';
-          $destPath = $destDir . $filename;
-
-          if (! file_exists($destPath)) {
-            $src = FCPATH . 'certificado_template/foroAdium2025.pdf';
-            if (file_exists($src)) {
-              try {
-                $nombreImpreso = trim($primerNombre . ' ' . $primerApellido);
-
-                // Usar FPDI (FPDF) para importar la plantilla y escribir el nombre
-                $pdf = new Fpdi();
-                $pageCount = $pdf->setSourceFile($src);
-                $tplId = $pdf->importPage(1);
-                $size = $pdf->getTemplateSize($tplId);
-                $orientation = (isset($size['width']) && isset($size['height']) && $size['width'] > $size['height']) ? 'L' : 'P';
-                if (isset($size['width']) && isset($size['height'])) {
-                  $pdf->AddPage($orientation, [$size['width'], $size['height']]);
-                } else {
-                  $pdf->AddPage($orientation);
-                }
-                $pdf->useTemplate($tplId);
-
-                // Intentar usar AddFont con archivo de definición (MakeFont) para Montserrat
-                $fontDefFile = 'Montserrat-Medium.php';
-                $fontDefPath = FCPATH . 'fonts/' . $fontDefFile;
-                $fontFamily = 'Montserrat';
-                if (file_exists($fontDefPath)) {
-                  // El cuarto parámetro indica el directorio donde está la definición
-                  $pdf->AddFont($fontFamily, '', $fontDefFile, FCPATH . 'fonts/');
-                  $pdf->SetFont($fontFamily, '', 55);
-                } else {
-                  // Fallback si no existe la definición: usa helvetica
-                  $pdf->SetFont('helvetica', 'B', 55);
-                }
-                $pdf->SetTextColor(34, 49, 63);
-
-                // Intentamos centrar el nombre en la zona aproximada. Ajusta Y según plantilla.
-                $x = 30;
-                $y = 110;
-                $w = 311;
-                $h = 30;
-
-                $pdf->SetXY($x, $y);
-                $pdf->Cell($w, $h, $nombreImpreso, 0, 1, 'C');
-
-                // Guardar PDF personalizado
-                $pdf->Output('F', $destPath);
-              } catch (\Throwable $e) {
-                // Si hay cualquier fallo (falta la librería, error, etc.), hacemos copia simple como respaldo
-                copy($src, $destPath);
-              }
-            }
+          $certService = new \App\Libraries\CertificadoService();
+          // Ensure the certificate exists (the service will create directory & file if possible)
+          if ($certService->isEligible($user)) {
+            $certService->ensureCertificateExists($user);
           }
         }
       } catch (\Exception $e) {
