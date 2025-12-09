@@ -257,10 +257,12 @@ class Videos extends BaseController
                 $pdf->SetTextColor(34, 49, 63);
 
                 // Intentamos centrar el nombre en la zona aproximada. Ajusta Y según plantilla.
-                $pageWidth = $pdf->GetPageWidth();
-                $yPosition = 105; // posición vertical estimada; ajustar si es necesario
-                $pdf->SetXY(0, $yPosition);
-                $pdf->Cell($pageWidth, 10, $nombreImpreso, 0, 1, 'C');
+                $x = 152;
+                $y = 122;
+                $w = 311;
+                $h = 35; 
+                $pdf->SetXY($x, $y);
+                $pdf->Cell($w, $h, $nombreImpreso, 0, 1, 'C');
 
                 // Guardar PDF personalizado
                 $pdf->Output('F', $destPath);
