@@ -229,8 +229,8 @@ class Videos extends BaseController
               try {
                 $nombreImpreso = trim($primerNombre . ' ' . $primerApellido);
 
-                // Usar FPDI para importar la plantilla y escribir el nombre
-                $pdf = new \setasign\Fpdi\Fpdi();
+                // Usar FPDI (FPDF) para importar la plantilla y escribir el nombre
+                $pdf = new Fpdi();
                 $pageCount = $pdf->setSourceFile($src);
                 $tplId = $pdf->importPage(1);
                 $size = $pdf->getTemplateSize($tplId);
@@ -242,13 +242,23 @@ class Videos extends BaseController
                 }
                 $pdf->useTemplate($tplId);
 
-                // Ajustes de estilo y posición: puede necesitarse ajuste fino según la plantilla
-                $pdf->SetFont('Arial', 'B', 28);
+                // Intentar usar AddFont con archivo de definición (MakeFont) para Montserrat
+                $fontDefFile = 'Montserrat-Medium.php';
+                $fontDefPath = FCPATH . 'fonts/' . $fontDefFile;
+                $fontFamily = 'Montserrat';
+                if (file_exists($fontDefPath)) {
+                  // El cuarto parámetro indica el directorio donde está la definición
+                  $pdf->AddFont($fontFamily, '', $fontDefFile, FCPATH . 'fonts/');
+                  $pdf->SetFont($fontFamily, '', 40);
+                } else {
+                  // Fallback si no existe la definición: usa helvetica
+                  $pdf->SetFont('helvetica', 'B', 40);
+                }
                 $pdf->SetTextColor(34, 49, 63);
 
                 // Intentamos centrar el nombre en la zona aproximada. Ajusta Y según plantilla.
                 $pageWidth = $pdf->GetPageWidth();
-                $yPosition = 95; // posición vertical estimada; ajustar si es necesario
+                $yPosition = 105; // posición vertical estimada; ajustar si es necesario
                 $pdf->SetXY(0, $yPosition);
                 $pdf->Cell($pageWidth, 10, $nombreImpreso, 0, 1, 'C');
 
