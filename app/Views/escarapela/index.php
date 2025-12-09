@@ -15,21 +15,12 @@
     }
 
     document.addEventListener('DOMContentLoaded', function() {
-      // default user (email intentionally omitted — we don't display email in the badge)
-      const defaultUser = {
-        name: "attendee test",
-        uuid: "1238784424",
-        logo: ""
-      };
-      const stored = safeParse(localStorage.getItem('user_info'));
-      const user = stored && stored.name ? stored : defaultUser;
+
 
       const nameEl = document.getElementById('badgeID_badge-name');
       const badge = document.getElementById('badgeID_badge');
       const image = badge ? badge.querySelector('.badgeID_badge-image') : null;
       const overlay = badge ? badge.querySelector('.badgeID_badge-overlay') : null;
-
-      if (nameEl) nameEl.textContent = user.name || '';
 
       if (!badge) return;
 
@@ -150,50 +141,6 @@
       const userInfo = badge.querySelector('.user-info');
       if (userInfo) userInfo.style.pointerEvents = 'auto';
 
-      // --- Fetch additional user details by token and parse extracted_cv ---
-      // Read token saved in localStorage under key `_token` and call vFairs API
-      const token = localStorage.getItem('_token');
-      if (token) {
-        (async function() {
-          try {
-            const url = `https://api.vfairs.com/v3/user/get-user-by-token?token=${encodeURIComponent(token)}&secret=secret_user`;
-            const res = await fetch(url, {
-              method: 'GET',
-              credentials: 'omit'
-            });
-            if (!res.ok) throw new Error('Network response was not ok: ' + res.status);
-            const body = await res.json();
-
-            const extracted = body && body.data && body.data.user_info && body.data.user_info.extracted_cv;
-            if (!extracted) return;
-
-            // Normalize into lines, remove empty lines and email lines
-            const lines = extracted.split(/\r?\n/).map(s => s.trim()).filter(Boolean);
-
-            const isEmail = s => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(s);
-            const isDate = s => /\d{1,2}\/\d{1,2}\/\d{2,4}/.test(s) || /\d{4}-\d{2}-\d{2}/.test(s);
-            const isGender = s => /^(masculino|femenino|male|female)$/i.test(s);
-            const isNoiseToken = s => /^(attendee|test|attest)$/i.test(s) || /^\d+$/.test(s);
-
-            const cleaned = lines.filter(l => !isEmail(l) && !isDate(l) && !isGender(l) && !isNoiseToken(l));
-
-            // Heuristic: after removing emails/dates/genders/noise, use first two remaining lines as ciudad and farmacia
-            const ciudad = cleaned[0] || '';
-            const farmacia = cleaned[1] || '';
-
-            // Prefer direct id lookup; fall back to querying inside the badge.
-            const ciudadEl = document.getElementById('badgeID_badge-city') || (overlay && overlay.querySelector('#badgeID_badge-city')) || badge.querySelector('#badgeID_badge-city');
-            const farmaciaEl = document.getElementById('badgeID_badge-pharmacy') || (overlay && overlay.querySelector('#badgeID_badge-pharmacy')) || badge.querySelector('#badgeID_badge-pharmacy');
-
-            if (ciudadEl) ciudadEl.textContent = ciudad ? `${ciudad}` : '';
-            if (farmaciaEl) farmaciaEl.textContent = farmacia ? `${farmacia}` : '';
-
-          } catch (err) {
-            // don't break the rest of the badge script on API errors
-            console.error('Error fetching/parsing vFairs token info', err);
-          }
-        })();
-      }
     });
   })();
 </script>
@@ -287,10 +234,10 @@
         alt="badge image" class="badgeID_badge-image" />
       <div class="badgeID_badge-overlay">
         <div class="badgeID_user-info">
-          <div class="badgeID_name" id="badgeID_badge-name">attendee name</div>
+          <div class="badgeID_name" id="badgeID_badge-name"><?= $nombre . " ".$apellido;  ?></div>
           <!-- Added persistent placeholders for parsed fields -->
-          <div class="badgeID_badge-city" id="badgeID_badge-city">Ciudad</div>
-          <div class="badgeID_badge-pharmacy" id="badgeID_badge-pharmacy">Farmacia</div>
+          <div class="badgeID_badge-city" id="badgeID_badge-city"><?= $ciudad; ?></div>
+          <div class="badgeID_badge-pharmacy" id="badgeID_badge-pharmacy"><?= $farmacia; ?></div>
         </div>
       </div>
     </div>
