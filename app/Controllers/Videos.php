@@ -249,18 +249,19 @@ class Videos extends BaseController
                 if (file_exists($fontDefPath)) {
                   // El cuarto parámetro indica el directorio donde está la definición
                   $pdf->AddFont($fontFamily, '', $fontDefFile, FCPATH . 'fonts/');
-                  $pdf->SetFont($fontFamily, '', 40);
+                  $pdf->SetFont($fontFamily, '', 55);
                 } else {
                   // Fallback si no existe la definición: usa helvetica
-                  $pdf->SetFont('helvetica', 'B', 40);
+                  $pdf->SetFont('helvetica', 'B', 55);
                 }
                 $pdf->SetTextColor(34, 49, 63);
 
                 // Intentamos centrar el nombre en la zona aproximada. Ajusta Y según plantilla.
-                $x = 152;
-                $y = 122;
+                $x = 30;
+                $y = 110;
                 $w = 311;
-                $h = 35; 
+                $h = 30;
+
                 $pdf->SetXY($x, $y);
                 $pdf->Cell($w, $h, $nombreImpreso, 0, 1, 'C');
 
