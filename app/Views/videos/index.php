@@ -1,4 +1,4 @@
-<?php $this->extend('layouts/videosLayout') ?>
+<?php $this->extend('layouts/dashboardLayout') ?>
 
 <?php $this->section('content') ?>
 

@@ -1,4 +1,4 @@
-<?= $this->extend('layouts/videosLayout') ?>
+<?= $this->extend('layouts/dashboardLayout') ?>
 <?= $this->section('content') ?>
 <style>
     h1 {
