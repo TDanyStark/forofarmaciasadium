@@ -120,4 +120,14 @@ class Registro extends BaseController
 
         return redirect()->to('/')->with('message', 'Registro completado.');
     }
+
+    /**
+     * Cierra la sesión del usuario y redirige a la página principal.
+     */
+    public function logout()
+    {
+        $session = session();
+        $session->destroy();
+        return redirect()->to('/')->with('message', 'Sesión cerrada.');
+    }
 }

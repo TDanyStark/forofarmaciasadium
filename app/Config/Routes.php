@@ -12,6 +12,8 @@ $routes->get('registro', 'Registro::create');
 $routes->post('registro/store', 'Registro::store');
 $routes->get('login', 'Registro::login');
 $routes->post('login/checkEmail', 'Registro::checkEmail');
+// Ruta para cerrar sesión
+$routes->get('logout', 'Registro::logout');
 // Rutas para videos YouTube
 $routes->get('video/(:any)', 'Videos::show/$1');
 
