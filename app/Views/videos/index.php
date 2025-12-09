@@ -72,12 +72,11 @@
     /* Badge for seen videos */
     .video-seen-badge {
         display: inline-block;
-        background: #28a745;
+        background: var(--adium-red);
         color: #fff;
         font-size: 0.75rem;
         padding: 3px 8px;
         border-radius: 999px;
-        margin-left: 8px;
     }
     .article-video.visto {
         opacity: 0.95;
@@ -162,11 +161,11 @@
                         <div class="video-card-info">
                             <span class="video-orden"><?= esc($orden) ?></span>
                             <div>
+                                <div class="video-title"><?= esc($title) ?></div>
+                                <div class="video-author"><?= esc($autor) ?></div>
                                 <?php if ($isSeen): ?>
                                     <div><span class="video-seen-badge">VISTO</span></div>
                                 <?php endif; ?>
-                                <div class="video-title"><?= esc($title) ?></div>
-                                <div class="video-author"><?= esc($autor) ?></div>
                             </div>
                         </div>
                     </a>

@@ -17,6 +17,9 @@ $routes->get('logout', 'Registro::logout');
 // Rutas para videos YouTube
 $routes->get('video/(:any)', 'Videos::show/$1');
 
+// API endpoint to save video progress (called via AJAX every ~30s)
+$routes->post('api/video/progress', 'Videos::saveProgress');
+
 // Páginas estáticas: escarapela y juegos
 $routes->get('escarapela', 'Pages::escarapela');
 $routes->get('juegos', 'Pages::juegos');

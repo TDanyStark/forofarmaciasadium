@@ -20,6 +20,53 @@ class Videos extends BaseController
     }
 
     /**
+     * Save periodic video progress (AJAX)
+     * Expects POST: video_id (YouTube id), seconds (int)
+     */
+    public function saveProgress()
+    {
+        $session = session();
+        $user = $session->get('user');
+        if (empty($user) || ! isset($user['id'])) {
+            return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthenticated']);
+        }
+
+        $videoYouTubeId = $this->request->getPost('video_id');
+        $seconds = (int) $this->request->getPost('seconds');
+
+        if (empty($videoYouTubeId) || $seconds < 0) {
+            return $this->response->setStatusCode(400)->setJSON(['error' => 'Invalid parameters']);
+        }
+
+        $videoRow = $this->videoModel->where('id_youtube', $videoYouTubeId)->first();
+        if (empty($videoRow)) {
+            return $this->response->setStatusCode(404)->setJSON(['error' => 'Video not found']);
+        }
+
+        // Use VideoProgressModel to upsert progress
+        $progressModel = new \App\Models\VideoProgressModel();
+
+        $existing = $progressModel->where('user_id', $user['id'])
+            ->where('video_id', $videoRow['id'])
+            ->first();
+
+        $data = [
+            'user_id' => $user['id'],
+            'video_id' => $videoRow['id'],
+            'seconds' => $seconds,
+        ];
+
+        if ($existing) {
+            // update existing row (use explicit primary key column `id`)
+            $progressModel->update($existing['id'], $data);
+        } else {
+            $progressModel->insert($data);
+        }
+
+        return $this->response->setJSON(['success' => true, 'seconds' => $seconds]);
+    }
+
+    /**
      * Fetch video snippets from YouTube Data API v3
      * @param array $ids
      * @return array
