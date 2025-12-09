@@ -124,6 +124,9 @@
           <li>
             <a href="<?= site_url('juegos') ?>" class="header-item <?= $current === 'juegos' ? 'active' : '' ?>" aria-current="<?= $current === 'juegos' ? 'page' : '' ?>">Juegos</a>
           </li>
+          <li>
+            <a href="<?= site_url('certificado') ?>" class="header-item <?= $current === 'certificados' ? 'active' : '' ?>" aria-current="<?= $current === 'certificados' ? 'page' : '' ?>">Certificado</a>
+          </li>
         </ul>
       </nav>
     </div>

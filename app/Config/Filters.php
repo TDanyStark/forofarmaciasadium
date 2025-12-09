@@ -112,6 +112,7 @@ class Filters extends BaseFilters
             '/',
             'escarapela',
             'juegos',
+            'certificado',
             'video/*',
         ]],
     ];

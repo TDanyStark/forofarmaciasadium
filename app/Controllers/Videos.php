@@ -5,6 +5,7 @@ namespace App\Controllers;
 use CodeIgniter\Controller;
 use App\Models\VideoModel;
 use App\Models\VideoViewModel;
+use setasign\Fpdi\Fpdi;
 
 class Videos extends BaseController
 {
@@ -169,6 +170,81 @@ class Videos extends BaseController
                 'user_agent' => $userAgent,
                 'viewed_at' => date('Y-m-d H:i:s'),
             ]);
+
+            // Después de registrar la vista, comprobamos si el usuario alcanza el 60% de sesiones
+            try {
+                // Conteo de sesiones vistas (distintas)
+                $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
+                $viewedVideoIds = array_unique(array_column($views, 'video_id'));
+                $viewedCount = count($viewedVideoIds);
+
+                // Total de videos disponibles
+                $totalVideos = (int) $this->videoModel->countAll();
+                $threshold = (int) ceil($totalVideos * 0.6);
+
+                if ($totalVideos > 0 && $viewedCount >= $threshold) {
+                    // Crear certificado (copia del PDF plantilla) si aún no existe
+                    $destDir = WRITEPATH . 'uploads/certificados/';
+                    if (! is_dir($destDir)) {
+                        mkdir($destDir, 0755, true);
+                    }
+
+                    $destPath = $destDir . 'certificado_user_' . $user['id'] . '.pdf';
+                    if (! file_exists($destPath)) {
+                        $src = FCPATH . 'certificado/foroAdium2025.pdf';
+                        if (file_exists($src)) {
+                            try {
+                                // Extraer primer nombre y primer apellido
+                                $nombres = trim($user['nombres'] ?? '');
+                                $apellidos = trim($user['apellidos'] ?? '');
+                                $primerNombre = '';
+                                $primerApellido = '';
+                                if ($nombres !== '') {
+                                    $parts = preg_split('/\s+/', $nombres);
+                                    $primerNombre = $parts[0] ?? '';
+                                }
+                                if ($apellidos !== '') {
+                                    $parts = preg_split('/\s+/', $apellidos);
+                                    $primerApellido = $parts[0] ?? '';
+                                }
+                                $nombreImpreso = trim($primerNombre . ' ' . $primerApellido);
+
+                                // Usar FPDI para importar la plantilla y escribir el nombre
+                                $pdf = new \setasign\Fpdi\Fpdi();
+                                $pageCount = $pdf->setSourceFile($src);
+                                $tplId = $pdf->importPage(1);
+                                $size = $pdf->getTemplateSize($tplId);
+                                $orientation = (isset($size['width']) && isset($size['height']) && $size['width'] > $size['height']) ? 'L' : 'P';
+                                if (isset($size['width']) && isset($size['height'])) {
+                                    $pdf->AddPage($orientation, [$size['width'], $size['height']]);
+                                } else {
+                                    $pdf->AddPage($orientation);
+                                }
+                                $pdf->useTemplate($tplId);
+
+                                // Ajustes de estilo y posición: puede necesitarse ajuste fino según la plantilla
+                                $pdf->SetFont('Arial', 'B', 28);
+                                $pdf->SetTextColor(34, 49, 63);
+
+                                // Intentamos centrar el nombre en la zona aproximada. Ajusta Y según plantilla.
+                                // Usamos unidades de la plantilla (mm) y ancho de página para centrar.
+                                $pageWidth = $pdf->GetPageWidth();
+                                $yPosition = 95; // posición vertical estimada; ajustar si es necesario
+                                $pdf->SetXY(0, $yPosition);
+                                $pdf->Cell($pageWidth, 10, $nombreImpreso, 0, 1, 'C');
+
+                                // Guardar PDF personalizado
+                                $pdf->Output('F', $destPath);
+                            } catch (\Throwable $e) {
+                                // Si hay cualquier fallo (falta la librería, error, etc.), hacemos copia simple como respaldo
+                                copy($src, $destPath);
+                            }
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                // No interrumpimos la experiencia si hay error en la generación
+            }
         }
 
         return view('videos/landing', [

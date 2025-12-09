@@ -20,6 +20,11 @@ $routes->get('video/(:any)', 'Videos::show/$1');
 // API endpoint to save video progress (called via AJAX every ~30s)
 $routes->post('api/video/progress', 'Videos::saveProgress');
 
+// Ruta para certificados — muestra/descarga del certificado cuando corresponde
+$routes->get('certificado', 'Certificado::index');
+
+// Nota: no usar 'certificado' porque existe la carpeta public/certificado
+
 // Páginas estáticas: escarapela y juegos
 $routes->get('escarapela', 'Pages::escarapela');
 $routes->get('juegos', 'Pages::juegos');
