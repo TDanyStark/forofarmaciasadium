@@ -23,42 +23,69 @@ class Certificado extends BaseController
         $viewedCount = count(array_unique(array_column($views, 'video_id')));
         $threshold = (int) ceil($totalVideos * 0.6);
 
-
         // Comprobamos si el usuario fue registrado en la tabla `certificados` (elegible)
         $certModel = new \App\Models\CertificadoModel();
         $certRow = $certModel->where('user_id', $user['id'])->first();
 
-        $certService = new \App\Libraries\CertificadoService();
-        $destPath = $certService->getDestPath($user);
+        $isEligible = !empty($certRow);
 
-        if (empty($certRow)) {
-            // Usuario no registrado como elegible: mostramos la vista informativa
-            return view('certificado/index', [
-                'viewedCount' => $viewedCount,
-                'totalVideos' => $totalVideos,
-                'threshold' => $threshold,
-            ]);
-        }
-
-        // Usuario registrado en `certificados`: generamos (si hace falta) y servimos el PDF
-        $pdfPath = $certService->ensureCertificateExists($user);
-        if ($pdfPath && file_exists($pdfPath)) {
-            try {
-                $certModel->update($certRow['id'], [
-                    'is_downloaded' => 1,
-                    'download_date' => date('Y-m-d H:i:s'),
-                ]);
-            } catch (\Exception $_) {
-                // No bloquear la descarga si la actualización falla
-            }
-            return $this->response->download($pdfPath, null);
-        }
-
-        // Si no se pudo crear aún el PDF, mostramos la vista informativa
         return view('certificado/index', [
             'viewedCount' => $viewedCount,
             'totalVideos' => $totalVideos,
             'threshold' => $threshold,
+            'isEligible' => $isEligible,
         ]);
+    }
+
+    public function download()
+    {
+        return $this->serveFile(true);
+    }
+
+    public function preview()
+    {
+        return $this->serveFile(false);
+    }
+
+    private function serveFile($download = true)
+    {
+        $session = session();
+        $user = $session->get('user');
+        if (empty($user) || ! isset($user['id'])) {
+            return redirect()->to('/login');
+        }
+
+        $certModel = new \App\Models\CertificadoModel();
+        $certRow = $certModel->where('user_id', $user['id'])->first();
+
+        if (empty($certRow)) {
+            return redirect()->to('/certificado');
+        }
+
+        $certService = new \App\Libraries\CertificadoService();
+        $pdfPath = $certService->ensureCertificateExists($user);
+
+        if ($pdfPath && file_exists($pdfPath)) {
+            if ($download) {
+                try {
+                    $certModel->update($certRow['id'], [
+                        'is_downloaded' => 1,
+                        'download_date' => date('Y-m-d H:i:s'),
+                    ]);
+                } catch (\Exception $_) {
+                    // No bloquear la descarga si la actualización falla
+                }
+                return $this->response->download($pdfPath, null);
+            } else {
+                // Serve inline
+                $fileContent = file_get_contents($pdfPath);
+                return $this->response
+                    ->setHeader('Content-Type', 'application/pdf')
+                    ->setHeader('Content-Disposition', 'inline; filename="certificado.pdf"')
+                    ->setBody($fileContent);
+            }
+        }
+
+        return redirect()->to('/certificado')->with('error', 'No se pudo generar el certificado.');
     }
 }

@@ -171,15 +171,18 @@ class Videos extends BaseController
         'viewed_at' => date('Y-m-d H:i:s'),
       ]);
 
-      // Después de registrar la vista, comprobamos si el usuario alcanzó 4 vistas distintas
+      // Después de registrar la vista, comprobamos si el usuario alcanzó el umbral de vistas distintas
       try {
         $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
         $viewedVideoIds = array_unique(array_column($views, 'video_id'));
         $viewedCount = count($viewedVideoIds);
 
-        // Si el usuario alcanzó 4 vistas distintas, registramos su elegibilidad en la tabla `certificados`.
+        $totalVideos = (int) $this->videoModel->countAll();
+        $threshold = (int) ceil($totalVideos * 0.6);
+
+        // Si el usuario alcanzó el umbral de vistas distintas, registramos su elegibilidad en la tabla `certificados`.
         // No generamos el PDF aquí; la generación ocurrirá cuando visite /certificado y exista el registro.
-        if ($viewedCount >= 4) {
+        if ($viewedCount >= $threshold) {
           $certModel = new \App\Models\CertificadoModel();
           $existing = $certModel->where('user_id', $user['id'])->first();
           if (empty($existing)) {

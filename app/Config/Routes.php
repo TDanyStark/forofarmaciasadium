@@ -22,6 +22,8 @@ $routes->post('api/video/progress', 'Videos::saveProgress');
 
 // Ruta para certificados — muestra/descarga del certificado cuando corresponde
 $routes->get('certificado', 'Certificado::index');
+$routes->get('certificado/download', 'Certificado::download');
+$routes->get('certificado/preview', 'Certificado::preview');
 
 // Nota: no usar 'certificado' porque existe la carpeta public/certificado
 
