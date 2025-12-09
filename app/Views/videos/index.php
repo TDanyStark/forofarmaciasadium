@@ -69,6 +69,21 @@
         box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
     }
 
+    /* Badge for seen videos */
+    .video-seen-badge {
+        display: inline-block;
+        background: #28a745;
+        color: #fff;
+        font-size: 0.75rem;
+        padding: 3px 8px;
+        border-radius: 999px;
+        margin-left: 8px;
+    }
+    .article-video.visto {
+        opacity: 0.95;
+        box-shadow: 0 2px 8px rgba(40,167,69,0.08);
+    }
+
     /* Small screens and up: allow multiple columns */
     @media (min-width: 576px) {
         .videos-grid {
@@ -141,11 +156,15 @@
                 }
             ?>
                 <div class="video-card">
-                    <a class="article-video" href="<?= site_url('video/' . $id) ?>">
+                    <?php $isSeen = (! empty($viewedVideos) && in_array($id, $viewedVideos, true)); ?>
+                    <a class="article-video <?= $isSeen ? 'visto' : '' ?>" href="<?= site_url('video/' . $id) ?>">
                         <img class="rounded" src="<?= esc($thumb) ?>" alt="<?= esc($title) ?>">
                         <div class="video-card-info">
                             <span class="video-orden"><?= esc($orden) ?></span>
                             <div>
+                                <?php if ($isSeen): ?>
+                                    <div><span class="video-seen-badge">VISTO</span></div>
+                                <?php endif; ?>
                                 <div class="video-title"><?= esc($title) ?></div>
                                 <div class="video-author"><?= esc($autor) ?></div>
                             </div>

@@ -58,8 +58,31 @@ class Videos extends BaseController
 
         $videos = $this->fetchVideos();
 
+        // Determinar qué videos ya fueron vistos por el usuario (si está logueado)
+        $viewedVideos = [];
+        $session = session();
+        $user = $session->get('user');
+        if (! empty($user) && isset($user['id'])) {
+            // Obtenemos los video_id (ids de la tabla videos) que el usuario ha visto
+            $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
+            $videoIds = array_column($views, 'video_id');
+
+            if (! empty($videoIds)) {
+                // Convertimos esos ids a los identificadores externos (id_youtube) usados como claves en la vista
+                $rows = $this->videoModel->select('id_youtube')->whereIn('id', $videoIds)->findAll();
+                foreach ($rows as $r) {
+                    if (! empty($r['id_youtube'])) {
+                        $viewedVideos[] = $r['id_youtube'];
+                    }
+                }
+            }
+        }
+        // ver los videos en el log de codeigniter
+        log_message('debug', 'Test');
+
         return view('videos/index', [
             'videos' => $videos,
+            'viewedVideos' => $viewedVideos,
         ]);
     }
 
