@@ -57,7 +57,6 @@ class Videos extends BaseController
     {
 
         $videos = $this->fetchVideos();
-
         // Determinar qué videos ya fueron vistos por el usuario (si está logueado)
         $viewedVideos = [];
         $session = session();
@@ -77,9 +76,7 @@ class Videos extends BaseController
                 }
             }
         }
-        // ver los videos en el log de codeigniter
-        log_message('debug', 'Test');
-
+        
         return view('videos/index', [
             'videos' => $videos,
             'viewedVideos' => $viewedVideos,

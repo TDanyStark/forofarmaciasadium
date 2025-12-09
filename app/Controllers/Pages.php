@@ -7,7 +7,7 @@ use App\Controllers\BaseController;
 class Pages extends BaseController
 {
     public function escarapela()
-    {
+    {   
         return view('escarapela/index');
     }
 
