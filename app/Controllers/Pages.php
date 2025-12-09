@@ -9,10 +9,6 @@ class Pages extends BaseController
     public function escarapela()
     {   
         $session = session();
-        if (!$session->get('isLoggedIn')) {
-            return redirect()->to('login');
-        }
-
         $user = $session->get('user');
         
         // Extract first name
