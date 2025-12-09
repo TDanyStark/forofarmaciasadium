@@ -57,7 +57,7 @@
         font-weight: 600;
     }
 
-    .article-video{
+    .article-video {
         display: inline-block;
         border-radius: 6px;
         text-decoration: none;
@@ -66,7 +66,7 @@
     }
 
     .article-video:hover {
-        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);   
+        box-shadow: 0 2px 15px rgba(0, 0, 0, 0.1);
     }
 
     /* Small screens and up: allow multiple columns */
@@ -167,6 +167,41 @@
             var expanded = navToggle.getAttribute('aria-expanded') === 'true';
             navToggle.setAttribute('aria-expanded', (!expanded).toString());
             mainNav.classList.toggle('open');
+        });
+    })();
+</script>
+
+<script>
+    // Intenta obtener el email del usuario activo desde el backend y prefill
+    (function() {
+        document.addEventListener('DOMContentLoaded', function() {
+            // Primero, intenta consultar el endpoint en el servidor.
+            // Construimos la URL de forma robusta: si PHP genera una URL absoluta la usamos,
+            // si genera una ruta relativa la preparamos con el origen para que siempre se haga desde '/'.
+            var apiPath = '<?= site_url('api/user/email') ?>';
+            var apiUrl = apiPath.match(/^https?:\/\//) ? apiPath : (window.location.origin + (apiPath.charAt(0) === '/' ? apiPath : ('/' + apiPath)));
+
+            fetch(apiUrl, {
+                    credentials: 'same-origin'
+                })
+                .then(function(res) {
+                    if (!res.ok) return null;
+                    return res.json();
+                })
+                .then(function(data) {
+                    if (!data) return;
+                    if (data.email) {
+                        try {
+                            localStorage.setItem('login_user_email', String(data.email).trim().toLowerCase());
+                        } catch (e) {
+                            console.warn('No se pudo guardar el email en localStorage:', e);
+                        }
+                    }
+                })
+                .catch(function(err) {
+                    console.warn('No se pudo obtener email desde API:', err);
+                });
+
         });
     })();
 </script>

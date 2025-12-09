@@ -23,3 +23,5 @@ $routes->get('juegos', 'Pages::juegos');
 
 // Ruta de ejemplo para API
 $routes->get('api/test', 'Api\Test::index');
+// Devuelve el email del usuario activo (si hay sesión)
+$routes->get('api/user/email', 'Api\User::email');
