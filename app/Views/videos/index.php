@@ -189,38 +189,5 @@
     })();
 </script>
 
-<script>
-    // Intenta obtener el email del usuario activo desde el backend y prefill
-    (function() {
-        document.addEventListener('DOMContentLoaded', function() {
-            // Primero, intenta consultar el endpoint en el servidor.
-            // Construimos la URL de forma robusta: si PHP genera una URL absoluta la usamos,
-            // si genera una ruta relativa la preparamos con el origen para que siempre se haga desde '/'.
-            var apiPath = '<?= site_url('api/user/email') ?>';
-            var apiUrl = apiPath.match(/^https?:\/\//) ? apiPath : (window.location.origin + (apiPath.charAt(0) === '/' ? apiPath : ('/' + apiPath)));
 
-            fetch(apiUrl, {
-                    credentials: 'same-origin'
-                })
-                .then(function(res) {
-                    if (!res.ok) return null;
-                    return res.json();
-                })
-                .then(function(data) {
-                    if (!data) return;
-                    if (data.email) {
-                        try {
-                            localStorage.setItem('login_user_email', String(data.email).trim().toLowerCase());
-                        } catch (e) {
-                            console.warn('No se pudo guardar el email en localStorage:', e);
-                        }
-                    }
-                })
-                .catch(function(err) {
-                    console.warn('No se pudo obtener email desde API:', err);
-                });
-
-        });
-    })();
-</script>
 <?php $this->endSection() ?>

@@ -22,6 +22,23 @@
             <form method="post" action="<?= site_url('registro/store') ?>">
                 <?= csrf_field() ?>
 
+                <?php
+                $redirectValue = old('redirect');
+                if ($redirectValue === null) {
+                    $redirectValue = $redirect ?? '';
+                }
+
+                $redirectValue = rawurldecode($redirectValue);
+
+                if ($redirectValue !== ''
+                    && (! str_starts_with($redirectValue, '/')
+                        || str_starts_with($redirectValue, '//')
+                        || strpos($redirectValue, '://') !== false)) {
+                    $redirectValue = '';
+                }
+                ?>
+                <input type="hidden" name="redirect" value="<?= esc($redirectValue) ?>">
+
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label class="form-label">Nombres <span class="required">*</span></label>
@@ -94,7 +111,11 @@
                 </div>
 
                 <div class="mt-4 d-flex justify-content-between align-items-center">
-                    <div class="small-note">¿Ya estás registrado? <a class="text-adium" href="<?= site_url('login') ?>">Inicia sesión</a></div>
+                    <?php $loginUrl = site_url('login');
+                    if ($redirectValue !== '' && $redirectValue !== '/') {
+                        $loginUrl .= '?redirect=' . urlencode($redirectValue);
+                    } ?>
+                    <div class="small-note">¿Ya estás registrado? <a class="text-adium" href="<?= $loginUrl ?>">Inicia sesión</a></div>
                     <button class="btn btn-adium" type="submit">Registrar</button>
                 </div>
             </form>

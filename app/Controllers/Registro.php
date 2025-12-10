@@ -15,14 +15,18 @@ class Registro extends BaseController
 
     public function create()
     {
-        // If already logged in, send to home
+        $redirectParam = $this->request->getGet('redirect');
+        $sanitizedRedirect = $this->sanitizeRedirect($redirectParam);
+
+        // If already logged in, send to destination or home
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/');
+            return redirect()->to($sanitizedRedirect ?? '/');
         }
         $data = [];
         $data['errors'] = session('errors');
         // Allow pre-filling email when redirected from login
         $data['email'] = $this->request->getGet('email') ?? null;
+        $data['redirect'] = $sanitizedRedirect;
         echo view('registro/register', $data);
     }
 
@@ -31,14 +35,18 @@ class Registro extends BaseController
      */
     public function login()
     {
-        // If already logged in, send to home
+        $redirectParam = $this->request->getGet('redirect');
+        $sanitizedRedirect = $this->sanitizeRedirect($redirectParam);
+
+        // If already logged in, send to destination or home
         if (session()->get('isLoggedIn')) {
-            return redirect()->to('/');
+            return redirect()->to($sanitizedRedirect ?? '/');
         }
         $data = [];
         $data['errors'] = session('errors');
         // allow prefill from query param
         $data['email'] = $this->request->getGet('email') ?? null;
+        $data['redirect'] = $sanitizedRedirect;
         echo view('registro/login', $data);
     }
 
@@ -56,6 +64,8 @@ class Registro extends BaseController
 
         $found = $this->registroModel->where('email', $email)->first();
 
+        $destination = $this->sanitizeRedirect($this->request->getPost('redirect')) ?? '/';
+
         if ($found) {
             // Email exists - start session and redirect home
             $session = session();
@@ -66,11 +76,18 @@ class Registro extends BaseController
                 'user' => $userData,
             ]);
 
-            return redirect()->to('/')->with('message', 'Sesión iniciada.');
+            return redirect()->to($destination)->with('message', 'Sesión iniciada.');
         }
 
         // Not found - redirect to the registration form with email prefilled
-        $url = site_url('registro') . '?email=' . urlencode($email);
+        $queryParams = ['email' => $email];
+
+        if ($destination !== '/') {
+            $queryParams['redirect'] = $destination;
+        }
+
+        $query = http_build_query($queryParams);
+        $url = site_url('registro') . ($query ? '?' . $query : '');
         return redirect()->to($url);
     }
 
@@ -118,7 +135,29 @@ class Registro extends BaseController
             ]);
         }
 
-        return redirect()->to('/')->with('message', 'Registro completado.');
+        $destination = $this->sanitizeRedirect($this->request->getPost('redirect')) ?? '/';
+
+        return redirect()->to($destination)->with('message', 'Registro completado.');
+    }
+
+    private function sanitizeRedirect(?string $target): ?string
+    {
+        if ($target === null) {
+            return null;
+        }
+
+        $candidate = rawurldecode($target);
+        $candidate = trim($candidate);
+
+        if ($candidate === '') {
+            return null;
+        }
+
+        if (! str_starts_with($candidate, '/') || str_starts_with($candidate, '//') || strpos($candidate, '://') !== false) {
+            return null;
+        }
+
+        return $candidate;
     }
 
     /**

@@ -20,16 +20,39 @@
           </div>
         <?php endif ?>
 
+        <?php
+        $redirectValue = old('redirect');
+        if ($redirectValue === null) {
+          $redirectValue = $redirect ?? '';
+        }
+
+        $redirectValue = rawurldecode($redirectValue);
+
+        if ($redirectValue !== ''
+          && (! str_starts_with($redirectValue, '/')
+            || str_starts_with($redirectValue, '//')
+            || strpos($redirectValue, '://') !== false)) {
+          $redirectValue = '';
+        }
+        ?>
+
         <form method="post" action="<?= site_url('login/checkEmail') ?>">
           <?= csrf_field() ?>
+
+          <input type="hidden" name="redirect" value="<?= esc($redirectValue) ?>">
 
           <div class="mb-3">
             <label class="form-label">Email</label>
             <input autocomplete="email" class="form-control" type="email" name="email" value="<?= esc(old('email') ?? ($email ?? '')) ?>" required>
           </div>
 
+          <?php $registerUrl = site_url('registro');
+              if ($redirectValue !== '' && $redirectValue !== '/') {
+              $registerUrl .= '?redirect=' . urlencode($redirectValue);
+          } ?>
+
           <div class="d-flex justify-content-between align-items-center">
-            <a href="<?= site_url('registro') ?>" class="btn btn-link">Registrarse</a>
+            <a href="<?= $registerUrl ?>" class="btn btn-link">Registrarse</a>
             <button class="btn btn-adium" type="submit">Continuar</button>
           </div>
         </form>

@@ -17,7 +17,18 @@ class Auth implements FilterInterface
 
         // Expect a boolean session key 'isLoggedIn'
         if (! $session->get('isLoggedIn')) {
-            return redirect()->to('/login');
+            $uri = $request->getUri();
+
+            $redirectPath = $uri->getPath();
+            $queryString  = $uri->getQuery();
+
+            if ($queryString !== '') {
+                $redirectPath .= '?' . $queryString;
+            }
+
+            $redirectTarget = '/' . ltrim($redirectPath, '/');
+
+            return redirect()->to('/login?redirect=' . rawurlencode($redirectTarget));
         }
     }
 
