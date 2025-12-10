@@ -7,6 +7,11 @@ use CodeIgniter\Router\RouteCollection;
  */
 $routes->get('/', 'Videos::index');
 
+// Redirección permanente de /es a /
+$routes->get('es', static function () {
+	return redirect()->to('/')->setStatusCode(301);
+});
+
 // Rutas para registro de inscritos
 $routes->get('registro', 'Registro::create');
 $routes->post('registro/store', 'Registro::store');
