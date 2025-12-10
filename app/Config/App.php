@@ -16,7 +16,9 @@ class App extends BaseConfig
      *
      * E.g., http://example.com/
      */
-    public string $baseURL = 'http://forofarmaciasadium.test/';
+    public string $baseURL = ENVIRONMENT === 'production'
+        ? 'https://forofarmaciasadium.com/'
+        : 'http://forofarmaciasadium.test/';
 
     /**
      * Allowed Hostnames in the Site URL other than the hostname in the baseURL.
