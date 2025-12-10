@@ -146,6 +146,10 @@ class Videos extends BaseController
       ]);
     }
 
+    // Obtener documentos adjuntos
+    $docModel = new \App\Models\VideoDocumentModel();
+    $documents = $docModel->where('video_id', $row['id'])->findAll();
+
     $snippet = [
       'title' => $row['nombre'],
       'author' => $row['author'],
@@ -153,6 +157,7 @@ class Videos extends BaseController
         'medium' => ['url' => $row['thumbnail'] ?: ('/images/thumbnails/default.jpg')]
       ],
       'orden' => $row['orden'] ?? null,
+      'documents' => $documents,
     ];
 
     // Registro de vista: si el usuario está logueado, guardamos la vista

@@ -64,6 +64,25 @@
         <p class="info-autor">Por: <?= esc($video['author'] ?? $video['channelTitle'] ?? 'Autor desconocido') ?></p>
 
         <p><?= nl2br(esc($video['description'] ?? '')) ?></p>
+
+        <?php if (!empty($video['documents'])): ?>
+            <div class="video-documents" style="margin-top: 20px;">
+                <h3 style="font-size: 1.2rem; margin-bottom: 10px;">Documentos adjuntos</h3>
+                <ul style="list-style: none; padding: 0;">
+                    <?php foreach ($video['documents'] as $doc): ?>
+                        <li style="margin-bottom: 8px;">
+                            <a href="<?= base_url($doc['file_path']) ?>" target="_blank" class="btn-adium" style="display: inline-flex; align-items: center; gap: 8px; padding: 8px 16px; font-size: 0.9rem;">
+                                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+                                    <path d="M.5 9.9a.5.5 0 0 1 .5.5v2.5a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-2.5a.5.5 0 0 1 1 0v2.5a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2v-2.5a.5.5 0 0 1 .5-.5z"/>
+                                    <path d="M7.646 11.854a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V1.5a.5.5 0 0 0-1 0v8.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3z"/>
+                                </svg>
+                                <?= esc($doc['title']) ?>
+                            </a>
+                        </li>
+                    <?php endforeach; ?>
+                </ul>
+            </div>
+        <?php endif; ?>
     <?php endif; ?>
 </div>
 
