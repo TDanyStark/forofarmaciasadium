@@ -1,18 +1,15 @@
 <?php
 namespace App\Libraries;
 
-use App\Models\VideoModel;
 use App\Models\VideoViewModel;
 use setasign\Fpdi\Fpdi;
 
 class CertificadoService
 {
-    protected VideoModel $videoModel;
     protected VideoViewModel $videoViewModel;
 
     public function __construct()
     {
-        $this->videoModel = new VideoModel();
         $this->videoViewModel = new VideoViewModel();
     }
 
@@ -64,15 +61,13 @@ class CertificadoService
 
     public function isEligible(array $user): bool
     {
-        $totalVideos = (int) $this->videoModel->countAll();
-        if ($totalVideos <= 0) {
+        $stats = $this->videoViewModel->fetchUserViewStats((int) ($user['id'] ?? 0));
+
+        if ($stats['totalVideos'] <= 0) {
             return false;
         }
-        $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
-        $viewedVideoIds = array_unique(array_column($views, 'video_id'));
-        $viewedCount = count($viewedVideoIds);
-        $threshold = (int) ceil($totalVideos * 0.6);
-        return $viewedCount >= $threshold;
+
+        return $stats['viewedCount'] >= $stats['threshold'];
     }
 
     /**
