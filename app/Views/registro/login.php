@@ -26,14 +26,7 @@
           $redirectValue = $redirect ?? '';
         }
 
-        $redirectValue = rawurldecode($redirectValue);
-
-        if ($redirectValue !== ''
-          && (! str_starts_with($redirectValue, '/')
-            || str_starts_with($redirectValue, '//')
-            || strpos($redirectValue, '://') !== false)) {
-          $redirectValue = '';
-        }
+        $redirectValue = sanitize_redirect($redirectValue) ?? '';
         ?>
 
         <form method="post" action="<?= site_url('login/checkEmail') ?>">
