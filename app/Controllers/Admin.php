@@ -11,7 +11,7 @@ class Admin extends BaseController
     public function login()
     {
         $redirectParam = $this->request->getGet('redirect');
-        $sanitizedRedirect = $this->sanitizeRedirect($redirectParam);
+        $sanitizedRedirect = sanitize_redirect($redirectParam);
 
         if (session()->get('adminIsLoggedIn')) {
             return redirect()->to($sanitizedRedirect ?? '/admin/inscritos');
@@ -27,7 +27,7 @@ class Admin extends BaseController
     {
         $username = trim((string) $this->request->getPost('username'));
         $password = (string) $this->request->getPost('password');
-        $redirect = $this->sanitizeRedirect($this->request->getPost('redirect')) ?? '/admin/inscritos';
+        $redirect = sanitize_redirect($this->request->getPost('redirect')) ?? '/admin/inscritos';
 
         $expectedUser = (string) env('ADMIN_USER');
         $expectedPass = (string) env('ADMIN_PASS');
@@ -107,51 +107,44 @@ class Admin extends BaseController
         $userIds = array_column($inscritos, 'id');
         $viewsByUser = ! empty($userIds) ? $videoViewModel->fetchViewsByUsers($userIds, $filters) : [];
 
-        $csv = fopen('php://temp', 'r+');
-        fputcsv($csv, [
-            'id',
-            'nombres',
-            'apellidos',
-            'email',
-            'celular',
-            'ciudad',
-            'nombre_farmacia',
-            'viewed_videos',
-            'last_viewed_at',
-            'videos',
-        ]);
-
-        foreach ($inscritos as $row) {
-            $views = $viewsByUser[$row['id']] ?? [];
-            $videoList = [];
-            foreach ($views as $view) {
-                $videoList[] = ($view['video_name'] ?? 'N/A') . ' | ' . ($view['viewed_at'] ?? '');
-            }
-
-            fputcsv($csv, [
-                $row['id'] ?? '',
-                $row['nombres'] ?? '',
-                $row['apellidos'] ?? '',
-                $row['email'] ?? '',
-                $row['celular'] ?? '',
-                $row['ciudad'] ?? '',
-                $row['nombre_farmacia'] ?? '',
-                $row['viewed_videos'] ?? 0,
-                $row['last_viewed_at'] ?? '',
-                implode('; ', $videoList),
-            ]);
-        }
-
-        rewind($csv);
-        $output = stream_get_contents($csv);
-        fclose($csv);
-
         $filename = 'inscritos_' . date('Ymd_His') . '.csv';
 
-        return $this->response
-            ->setHeader('Content-Type', 'text/csv')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-            ->setBody($output);
+        return $this->buildCsvResponse(
+            $filename,
+            [
+                'id',
+                'nombres',
+                'apellidos',
+                'email',
+                'celular',
+                'ciudad',
+                'nombre_farmacia',
+                'viewed_videos',
+                'last_viewed_at',
+                'videos',
+            ],
+            $inscritos,
+            static function (array $row) use ($viewsByUser): array {
+                $views = $viewsByUser[$row['id']] ?? [];
+                $videoList = [];
+                foreach ($views as $view) {
+                    $videoList[] = ($view['video_name'] ?? 'N/A') . ' | ' . ($view['viewed_at'] ?? '');
+                }
+
+                return [
+                    $row['id'] ?? '',
+                    $row['nombres'] ?? '',
+                    $row['apellidos'] ?? '',
+                    $row['email'] ?? '',
+                    $row['celular'] ?? '',
+                    $row['ciudad'] ?? '',
+                    $row['nombre_farmacia'] ?? '',
+                    $row['viewed_videos'] ?? 0,
+                    $row['last_viewed_at'] ?? '',
+                    implode('; ', $videoList),
+                ];
+            }
+        );
     }
 
     public function exportVideoViews()
@@ -161,82 +154,86 @@ class Admin extends BaseController
         $videoViewModel = new VideoViewModel();
         $rows = $videoViewModel->fetchVideoViewsReport($filters);
 
-        $csv = fopen('php://temp', 'r+');
-        fputcsv($csv, [
-            'video_id',
-            'video_name',
-            'user_id',
-            'nombres',
-            'apellidos',
-            'email',
-            'viewed_at',
-            'ip',
-        ]);
-
-        foreach ($rows as $row) {
-            fputcsv($csv, [
-                $row['video_id'] ?? '',
-                $row['video_name'] ?? '',
-                $row['user_id'] ?? '',
-                $row['nombres'] ?? '',
-                $row['apellidos'] ?? '',
-                $row['email'] ?? '',
-                $row['viewed_at'] ?? '',
-                $row['ip'] ?? '',
-            ]);
-        }
-
-        rewind($csv);
-        $output = stream_get_contents($csv);
-        fclose($csv);
-
         $filename = 'video_views_' . date('Ymd_His') . '.csv';
 
-        return $this->response
-            ->setHeader('Content-Type', 'text/csv')
-            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
-            ->setBody($output);
+        return $this->buildCsvResponse(
+            $filename,
+            [
+                'video_id',
+                'video_name',
+                'user_id',
+                'nombres',
+                'apellidos',
+                'email',
+                'viewed_at',
+                'ip',
+            ],
+            $rows,
+            static function (array $row): array {
+                return [
+                    $row['video_id'] ?? '',
+                    $row['video_name'] ?? '',
+                    $row['user_id'] ?? '',
+                    $row['nombres'] ?? '',
+                    $row['apellidos'] ?? '',
+                    $row['email'] ?? '',
+                    $row['viewed_at'] ?? '',
+                    $row['ip'] ?? '',
+                ];
+            }
+        );
     }
 
     public function exportInscritosVideos()
     {
         $videoViewModel = new VideoViewModel();
         $rows = $videoViewModel->fetchInscritosVideosReport();
+        $filename = 'inscritos_videos_' . date('Ymd_His') . '.csv';
 
+        return $this->buildCsvResponse(
+            $filename,
+            [
+                'inscrito_id',
+                'inscrito_nombres',
+                'inscrito_apellidos',
+                'inscrito_email',
+                'ciudad',
+                'nombre_cadena_distribuidor',
+                'fecha_nacimiento',
+                'video_id',
+                'video_titulo',
+                'ultima_vez_visto',
+            ],
+            $rows,
+            static function (array $row): array {
+                return [
+                    $row['inscrito_id'] ?? '',
+                    $row['inscrito_nombres'] ?? '',
+                    $row['inscrito_apellidos'] ?? '',
+                    $row['inscrito_email'] ?? 'NN',
+                    $row['ciudad'] ?? 'NN',
+                    $row['nombre_cadena_distribuidor'] ?? 'NN',
+                    $row['fecha_nacimiento'] ?? '1900-01-01',
+                    $row['video_id'] ?? 0,
+                    $row['video_titulo'] ?? 'NN',
+                    $row['ultima_vez_visto'] ?? '1900-01-01 00:00:00',
+                ];
+            }
+        );
+    }
+
+    private function buildCsvResponse(string $filename, array $headers, array $rows, callable $rowMapper)
+    {
         $csv = fopen('php://temp', 'r+');
-        fputcsv($csv, [
-            'inscrito_id',
-            'inscrito_nombres',
-            'inscrito_apellidos',
-            'inscrito_email',
-            'ciudad',
-            'nombre_cadena_distribuidor',
-            'fecha_nacimiento',
-            'video_id',
-            'video_titulo',
-            'ultima_vez_visto',
-        ]);
+        fputcsv($csv, $headers);
 
         foreach ($rows as $row) {
-            fputcsv($csv, [
-                $row['inscrito_id'] ?? '',
-                $row['inscrito_nombres'] ?? '',
-                $row['inscrito_apellidos'] ?? '',
-                $row['inscrito_email'] ?? 'NN',
-                $row['ciudad'] ?? 'NN',
-                $row['nombre_cadena_distribuidor'] ?? 'NN',
-                $row['fecha_nacimiento'] ?? '1900-01-01',
-                $row['video_id'] ?? 0,
-                $row['video_titulo'] ?? 'NN',
-                $row['ultima_vez_visto'] ?? '1900-01-01 00:00:00',
-            ]);
+            fputcsv($csv, $rowMapper($row));
         }
 
         rewind($csv);
         $output = stream_get_contents($csv);
         fclose($csv);
-
-        $filename = 'inscritos_videos_' . date('Ymd_His') . '.csv';
 
         return $this->response
             ->setHeader('Content-Type', 'text/csv')
@@ -289,26 +286,6 @@ class Admin extends BaseController
         }
 
         return '';
-    }
-
-    private function sanitizeRedirect(?string $target): ?string
-    {
-        if ($target === null) {
-            return null;
-        }
-
-        $candidate = rawurldecode($target);
-        $candidate = trim($candidate);
-
-        if ($candidate === '') {
-            return null;
-        }
-
-        if (! str_starts_with($candidate, '/') || str_starts_with($candidate, '//') || strpos($candidate, '://') !== false) {
-            return null;
-        }
-
-        return $candidate;
     }
 
     private function verifyPassword(string $input, string $expected): bool

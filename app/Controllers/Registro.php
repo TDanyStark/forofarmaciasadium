@@ -16,7 +16,7 @@ class Registro extends BaseController
     public function create()
     {
         $redirectParam = $this->request->getGet('redirect');
-        $sanitizedRedirect = $this->sanitizeRedirect($redirectParam);
+        $sanitizedRedirect = sanitize_redirect($redirectParam);
 
         // If already logged in, send to destination or home
         if (session()->get('isLoggedIn')) {
@@ -36,7 +36,7 @@ class Registro extends BaseController
     public function login()
     {
         $redirectParam = $this->request->getGet('redirect');
-        $sanitizedRedirect = $this->sanitizeRedirect($redirectParam);
+        $sanitizedRedirect = sanitize_redirect($redirectParam);
 
         // If already logged in, send to destination or home
         if (session()->get('isLoggedIn')) {
@@ -64,7 +64,7 @@ class Registro extends BaseController
 
         $found = $this->registroModel->where('email', $email)->first();
 
-        $destination = $this->sanitizeRedirect($this->request->getPost('redirect')) ?? '/';
+        $destination = sanitize_redirect($this->request->getPost('redirect')) ?? '/';
 
         if ($found) {
             // Email exists - start session and redirect home
@@ -135,29 +135,9 @@ class Registro extends BaseController
             ]);
         }
 
-        $destination = $this->sanitizeRedirect($this->request->getPost('redirect')) ?? '/';
+        $destination = sanitize_redirect($this->request->getPost('redirect')) ?? '/';
 
         return redirect()->to($destination)->with('message', 'Registro completado.');
-    }
-
-    private function sanitizeRedirect(?string $target): ?string
-    {
-        if ($target === null) {
-            return null;
-        }
-
-        $candidate = rawurldecode($target);
-        $candidate = trim($candidate);
-
-        if ($candidate === '') {
-            return null;
-        }
-
-        if (! str_starts_with($candidate, '/') || str_starts_with($candidate, '//') || strpos($candidate, '://') !== false) {
-            return null;
-        }
-
-        return $candidate;
     }
 
     /**

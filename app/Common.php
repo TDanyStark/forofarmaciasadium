@@ -13,3 +13,25 @@
  *
  * @see: https://codeigniter.com/user_guide/extending/common.html
  */
+
+if (! function_exists('sanitize_redirect')) {
+	function sanitize_redirect(?string $target): ?string
+	{
+		if ($target === null) {
+			return null;
+		}
+
+		$candidate = rawurldecode($target);
+		$candidate = trim($candidate);
+
+		if ($candidate === '') {
+			return null;
+		}
+
+		if (! str_starts_with($candidate, '/') || str_starts_with($candidate, '//') || strpos($candidate, '://') !== false) {
+			return null;
+		}
+
+		return $candidate;
+	}
+}
