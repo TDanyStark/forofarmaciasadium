@@ -38,3 +38,12 @@ $routes->get('juegos', 'Pages::juegos');
 
 // Devuelve el email del usuario activo (si hay sesión)
 $routes->get('api/user/email', 'Api\User::email');
+
+// Admin routes
+$routes->get('admin/login', 'Admin::login');
+$routes->post('admin/login', 'Admin::authenticate');
+$routes->get('admin/logout', 'Admin::logout');
+$routes->get('admin/inscritos', 'Admin::inscritos');
+$routes->get('admin/video-views', 'Admin::videoViews');
+$routes->get('admin/export/inscritos', 'Admin::exportInscritos');
+$routes->get('admin/export/video-views', 'Admin::exportVideoViews');

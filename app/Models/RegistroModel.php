@@ -48,4 +48,46 @@ class RegistroModel extends Model
     {
         return $this->validationRules;
     }
+
+    public function fetchAdminInscritos(array $filters): array
+    {
+        $builder = $this->db->table($this->table . ' i');
+        $builder->select('i.*, COUNT(DISTINCT vv.video_id) AS viewed_videos, MAX(vv.viewed_at) AS last_viewed_at');
+
+        $joinOn = 'vv.user_id = i.id';
+
+        if (! empty($filters['video_id'])) {
+            $joinOn .= ' AND vv.video_id = ' . (int) $filters['video_id'];
+        }
+
+        if (! empty($filters['date_from'])) {
+            $joinOn .= ' AND vv.viewed_at >= ' . $this->db->escape($filters['date_from'] . ' 00:00:00');
+        }
+
+        if (! empty($filters['date_to'])) {
+            $joinOn .= ' AND vv.viewed_at <= ' . $this->db->escape($filters['date_to'] . ' 23:59:59');
+        }
+
+        $builder->join('video_views vv', $joinOn, 'left');
+
+        if (! empty($filters['q'])) {
+            $builder->groupStart()
+                ->like('i.nombres', $filters['q'])
+                ->orLike('i.apellidos', $filters['q'])
+                ->orLike('i.email', $filters['q'])
+                ->groupEnd();
+        }
+
+        $builder->groupBy('i.id');
+
+        if ($filters['watched'] === '1') {
+            $builder->having('viewed_videos >', 0);
+        } elseif ($filters['watched'] === '0') {
+            $builder->having('viewed_videos', 0);
+        }
+
+        $builder->orderBy('i.registration_date', 'DESC');
+
+        return $builder->get()->getResultArray();
+    }
 }

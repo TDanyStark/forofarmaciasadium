@@ -26,6 +26,7 @@ class Filters extends BaseFilters
      */
     public array $aliases = [
         'auth'          => \App\Filters\Auth::class,
+        'adminauth'     => \App\Filters\AdminAuth::class,
         'csrf'          => CSRF::class,
         'toolbar'       => DebugToolbar::class,
         'honeypot'      => Honeypot::class,
@@ -113,6 +114,13 @@ class Filters extends BaseFilters
             'juegos',
             'certificado',
             'video/*',
+        ]],
+        'adminauth' => ['before' => [
+            'admin',
+            'admin/*',
+        ], 'except' => [
+            'admin/login',
+            'admin/login/*',
         ]],
     ];
 
