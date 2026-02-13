@@ -8,29 +8,12 @@
       <h4 class="mb-3 text-center">Ingreso admin</h4>
       <p class="text-muted">Ingresa las credenciales de admin para continuar.</p>
 
-      <?php if (! empty($errors) && is_array($errors)) : ?>
-        <div class="alert alert-danger">
-          <ul class="mb-0">
-            <?php foreach ($errors as $err) : ?>
-              <li><?= esc($err) ?></li>
-            <?php endforeach ?>
-          </ul>
-        </div>
-      <?php endif ?>
-
-      <?php
-      $redirectValue = old('redirect');
-      if ($redirectValue === null) {
-        $redirectValue = $redirect ?? '';
-      }
-
-      $redirectValue = sanitize_redirect($redirectValue) ?? '';
-      ?>
+      <?= view('components/form_errors', ['errors' => $errors ?? null]) ?>
 
       <form method="post" action="<?= site_url('admin/login') ?>">
         <?= csrf_field() ?>
 
-        <input type="hidden" name="redirect" value="<?= esc($redirectValue) ?>">
+        <?= view('components/redirect_hidden', ['redirect' => $redirect ?? null]) ?>
 
         <div class="mb-3">
           <label class="form-label">Usuario</label>

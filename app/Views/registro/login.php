@@ -10,29 +10,12 @@
         <h4 class="mb-3 text-center">Iniciar sesión</h4>
         <p class="text-muted">Ingresa tu correo electrónico. Si no estás registrado serás redirigido al formulario de registro.</p>
 
-        <?php if (! empty($errors) && is_array($errors)) : ?>
-          <div class="alert alert-danger">
-            <ul class="mb-0">
-              <?php foreach ($errors as $err) : ?>
-                <li><?= esc($err) ?></li>
-              <?php endforeach ?>
-            </ul>
-          </div>
-        <?php endif ?>
-
-        <?php
-        $redirectValue = old('redirect');
-        if ($redirectValue === null) {
-          $redirectValue = $redirect ?? '';
-        }
-
-        $redirectValue = sanitize_redirect($redirectValue) ?? '';
-        ?>
+        <?= view('components/form_errors', ['errors' => $errors ?? null]) ?>
 
         <form method="post" action="<?= site_url('login/checkEmail') ?>">
           <?= csrf_field() ?>
 
-          <input type="hidden" name="redirect" value="<?= esc($redirectValue) ?>">
+          <?= view('components/redirect_hidden', ['redirect' => $redirect ?? null]) ?>
 
           <div class="mb-3">
             <label class="form-label">Email</label>
@@ -40,9 +23,15 @@
           </div>
 
           <?php $registerUrl = site_url('registro');
+              $redirectValue = old('redirect');
+              if ($redirectValue === null) {
+                $redirectValue = $redirect ?? '';
+              }
+
+              $redirectValue = sanitize_redirect($redirectValue) ?? '';
               if ($redirectValue !== '' && $redirectValue !== '/') {
-              $registerUrl .= '?redirect=' . urlencode($redirectValue);
-          } ?>
+                $registerUrl .= '?redirect=' . urlencode($redirectValue);
+              } ?>
 
           <div class="d-flex justify-content-between align-items-center">
             <a href="<?= $registerUrl ?>" class="btn btn-link">Registrarse</a>

@@ -9,28 +9,12 @@
             <h2 class="card-title mb-3 text-center">Formulario de registro</h2>
             <p class="small-note">Complete sus datos para registrarse en el foro. Los campos marcados con <span class="required">*</span> son obligatorios.</p>
 
-            <?php if (! empty($errors) && is_array($errors)) : ?>
-                <div class="alert alert-danger">
-                    <ul class="mb-0">
-                        <?php foreach ($errors as $err) : ?>
-                            <li><?= esc($err) ?></li>
-                        <?php endforeach ?>
-                    </ul>
-                </div>
-            <?php endif ?>
+            <?= view('components/form_errors', ['errors' => $errors ?? null]) ?>
 
             <form method="post" action="<?= site_url('registro/store') ?>">
                 <?= csrf_field() ?>
 
-                <?php
-                $redirectValue = old('redirect');
-                if ($redirectValue === null) {
-                    $redirectValue = $redirect ?? '';
-                }
-
-                $redirectValue = sanitize_redirect($redirectValue) ?? '';
-                ?>
-                <input type="hidden" name="redirect" value="<?= esc($redirectValue) ?>">
+                <?= view('components/redirect_hidden', ['redirect' => $redirect ?? null]) ?>
 
                 <div class="row g-3">
                     <div class="col-md-6">
@@ -105,6 +89,12 @@
 
                 <div class="mt-4 d-flex justify-content-between align-items-center">
                     <?php $loginUrl = site_url('login');
+                    $redirectValue = old('redirect');
+                    if ($redirectValue === null) {
+                        $redirectValue = $redirect ?? '';
+                    }
+
+                    $redirectValue = sanitize_redirect($redirectValue) ?? '';
                     if ($redirectValue !== '' && $redirectValue !== '/') {
                         $loginUrl .= '?redirect=' . urlencode($redirectValue);
                     } ?>

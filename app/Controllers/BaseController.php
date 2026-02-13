@@ -55,4 +55,21 @@ abstract class BaseController extends Controller
 
         // E.g.: $this->session = service('session');
     }
+
+    protected function getSessionUser(): ?array
+    {
+        $user = session()->get('user');
+
+        if (is_object($user) && method_exists($user, 'toArray')) {
+            $user = $user->toArray();
+        } elseif (is_object($user)) {
+            $user = (array) $user;
+        }
+
+        if (! is_array($user) || empty($user['id'])) {
+            return null;
+        }
+
+        return $user;
+    }
 }

@@ -8,8 +8,7 @@ class Pages extends BaseController
 {
     public function escarapela()
     {   
-        $session = session();
-        $user = $session->get('user');
+        $user = $this->getSessionUser() ?? [];
         
         // Extract first name
         $nombres = explode(' ', trim($user['nombres'] ?? ''));

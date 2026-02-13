@@ -26,9 +26,8 @@ class Videos extends BaseController
    */
   public function saveProgress()
   {
-    $session = session();
-    $user = $session->get('user');
-    if (empty($user) || ! isset($user['id'])) {
+    $user = $this->getSessionUser();
+    if ($user === null) {
       return $this->response->setStatusCode(401)->setJSON(['error' => 'Unauthenticated']);
     }
 
@@ -107,9 +106,8 @@ class Videos extends BaseController
     $videos = $this->fetchVideos();
     // Determinar qué videos ya fueron vistos por el usuario (si está logueado)
     $viewedVideos = [];
-    $session = session();
-    $user = $session->get('user');
-    if (! empty($user) && isset($user['id'])) {
+    $user = $this->getSessionUser();
+    if ($user !== null) {
       // Obtenemos los video_id (ids de la tabla videos) que el usuario ha visto
       $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
       $videoIds = array_column($views, 'video_id');
@@ -178,12 +176,10 @@ class Videos extends BaseController
 
       // Después de registrar la vista, comprobamos si el usuario alcanzó el umbral de vistas distintas
       try {
-        $views = $this->videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
-        $viewedVideoIds = array_unique(array_column($views, 'video_id'));
-        $viewedCount = count($viewedVideoIds);
-
-        $totalVideos = (int) $this->videoModel->countAll();
-        $threshold = (int) ceil($totalVideos * 0.6);
+        $stats = $this->videoViewModel->fetchUserViewStats((int) $user['id']);
+        $viewedCount = $stats['viewedCount'];
+        $totalVideos = $stats['totalVideos'];
+        $threshold = $stats['threshold'];
 
         // Si el usuario alcanzó el umbral de vistas distintas, registramos su elegibilidad en la tabla `certificados`.
         // No generamos el PDF aquí; la generación ocurrirá cuando visite /certificado y exista el registro.

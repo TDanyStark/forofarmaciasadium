@@ -45,6 +45,24 @@ class VideoViewModel extends Model
         return $grouped;
     }
 
+    public function fetchUserViewStats(int $userId): array
+    {
+        $views = $this->where('user_id', $userId)->select('video_id')->distinct()->findAll();
+        $viewedVideoIds = array_values(array_unique(array_column($views, 'video_id')));
+        $viewedCount = count($viewedVideoIds);
+
+        $videoModel = new VideoModel();
+        $totalVideos = (int) $videoModel->countAll();
+        $threshold = (int) ceil($totalVideos * 0.6);
+
+        return [
+            'viewedVideoIds' => $viewedVideoIds,
+            'viewedCount' => $viewedCount,
+            'totalVideos' => $totalVideos,
+            'threshold' => $threshold,
+        ];
+    }
+
     public function fetchVideoViewsReport(array $filters): array
     {
         $builder = $this->db->table($this->table . ' vv');

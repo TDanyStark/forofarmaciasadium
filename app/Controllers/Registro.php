@@ -16,18 +16,12 @@ class Registro extends BaseController
     public function create()
     {
         $redirectParam = $this->request->getGet('redirect');
-        $sanitizedRedirect = sanitize_redirect($redirectParam);
-
-        // If already logged in, send to destination or home
-        if (session()->get('isLoggedIn')) {
-            return redirect()->to($sanitizedRedirect ?? '/');
+        $redirectResponse = $this->redirectIfLoggedIn($redirectParam);
+        if ($redirectResponse) {
+            return $redirectResponse;
         }
-        $data = [];
-        $data['errors'] = session('errors');
-        // Allow pre-filling email when redirected from login
-        $data['email'] = $this->request->getGet('email') ?? null;
-        $data['redirect'] = $sanitizedRedirect;
-        echo view('registro/register', $data);
+
+        return view('registro/register', $this->buildAuthViewData($redirectParam));
     }
 
     /**
@@ -36,18 +30,12 @@ class Registro extends BaseController
     public function login()
     {
         $redirectParam = $this->request->getGet('redirect');
-        $sanitizedRedirect = sanitize_redirect($redirectParam);
-
-        // If already logged in, send to destination or home
-        if (session()->get('isLoggedIn')) {
-            return redirect()->to($sanitizedRedirect ?? '/');
+        $redirectResponse = $this->redirectIfLoggedIn($redirectParam);
+        if ($redirectResponse) {
+            return $redirectResponse;
         }
-        $data = [];
-        $data['errors'] = session('errors');
-        // allow prefill from query param
-        $data['email'] = $this->request->getGet('email') ?? null;
-        $data['redirect'] = $sanitizedRedirect;
-        echo view('registro/login', $data);
+
+        return view('registro/login', $this->buildAuthViewData($redirectParam));
     }
 
     /**
@@ -68,13 +56,7 @@ class Registro extends BaseController
 
         if ($found) {
             // Email exists - start session and redirect home
-            $session = session();
-            // store minimal user info; entity -> toArray()
-            $userData = is_object($found) && method_exists($found, 'toArray') ? $found->toArray() : (array) $found;
-            $session->set([
-                'isLoggedIn' => true,
-                'user' => $userData,
-            ]);
+            $this->setUserSession($found);
 
             return redirect()->to($destination)->with('message', 'Sesión iniciada.');
         }
@@ -127,12 +109,7 @@ class Registro extends BaseController
         $insertId = $this->registroModel->getInsertID();
         $user = $this->registroModel->find($insertId);
         if ($user) {
-            $session = session();
-            $userData = is_object($user) && method_exists($user, 'toArray') ? $user->toArray() : (array) $user;
-            $session->set([
-                'isLoggedIn' => true,
-                'user' => $userData,
-            ]);
+            $this->setUserSession($user);
         }
 
         $destination = sanitize_redirect($this->request->getPost('redirect')) ?? '/';
@@ -148,5 +125,34 @@ class Registro extends BaseController
         $session = session();
         $session->destroy();
         return redirect()->to('/')->with('message', 'Sesión cerrada.');
+    }
+
+    private function redirectIfLoggedIn(?string $redirectParam)
+    {
+        $sanitizedRedirect = sanitize_redirect($redirectParam);
+
+        if (session()->get('isLoggedIn')) {
+            return redirect()->to($sanitizedRedirect ?? '/');
+        }
+
+        return null;
+    }
+
+    private function buildAuthViewData(?string $redirectParam): array
+    {
+        return [
+            'errors' => session('errors'),
+            'email' => $this->request->getGet('email') ?? null,
+            'redirect' => sanitize_redirect($redirectParam),
+        ];
+    }
+
+    private function setUserSession($user): void
+    {
+        $userData = is_object($user) && method_exists($user, 'toArray') ? $user->toArray() : (array) $user;
+        session()->set([
+            'isLoggedIn' => true,
+            'user' => $userData,
+        ]);
     }
 }

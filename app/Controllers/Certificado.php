@@ -8,9 +8,8 @@ class Certificado extends BaseController
 {
     public function index()
     {
-        $session = session();
-        $user = $session->get('user');
-        if (empty($user) || ! isset($user['id'])) {
+        $user = $this->getSessionUser();
+        if ($user === null) {
             return redirect()->to('/login');
         }
 
@@ -18,10 +17,10 @@ class Certificado extends BaseController
         $videoModel = new \App\Models\VideoModel();
         $videoViewModel = new \App\Models\VideoViewModel();
 
-        $totalVideos = (int) $videoModel->countAll();
-        $views = $videoViewModel->where('user_id', $user['id'])->select('video_id')->distinct()->findAll();
-        $viewedCount = count(array_unique(array_column($views, 'video_id')));
-        $threshold = (int) ceil($totalVideos * 0.6);
+        $stats = $videoViewModel->fetchUserViewStats((int) $user['id']);
+        $totalVideos = $stats['totalVideos'];
+        $viewedCount = $stats['viewedCount'];
+        $threshold = $stats['threshold'];
 
         // Comprobamos si el usuario fue registrado en la tabla `certificados` (elegible)
         $certModel = new \App\Models\CertificadoModel();
@@ -49,9 +48,8 @@ class Certificado extends BaseController
 
     private function serveFile($download = true)
     {
-        $session = session();
-        $user = $session->get('user');
-        if (empty($user) || ! isset($user['id'])) {
+        $user = $this->getSessionUser();
+        if ($user === null) {
             return redirect()->to('/login');
         }
 
