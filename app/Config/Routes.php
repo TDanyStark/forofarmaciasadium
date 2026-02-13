@@ -47,3 +47,4 @@ $routes->get('admin/inscritos', 'Admin::inscritos');
 $routes->get('admin/video-views', 'Admin::videoViews');
 $routes->get('admin/export/inscritos', 'Admin::exportInscritos');
 $routes->get('admin/export/video-views', 'Admin::exportVideoViews');
+$routes->get('admin/export/inscritos-videos', 'Admin::exportInscritosVideos');

@@ -8,6 +8,7 @@
     return $value !== '' && $value !== null;
   });
   $exportUrl = site_url('admin/export/inscritos') . ($query ? ('?' . http_build_query($query)) : '');
+  $exportInscritosVideosUrl = site_url('admin/export/inscritos-videos');
   ?>
 
   <div class="filters">
@@ -47,6 +48,7 @@
         <button class="btn btn-primary" type="submit">Aplicar</button>
         <a class="btn btn-outline-secondary" href="<?= site_url('admin/inscritos') ?>">Limpiar</a>
         <a class="btn btn-outline-success" href="<?= esc($exportUrl) ?>">Descargar CSV</a>
+        <a class="btn btn-outline-success" href="<?= esc($exportInscritosVideosUrl) ?>">CSV Inscritos/Videos</a>
       </div>
     </form>
   </div>

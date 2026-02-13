@@ -198,6 +198,52 @@ class Admin extends BaseController
             ->setBody($output);
     }
 
+    public function exportInscritosVideos()
+    {
+        $videoViewModel = new VideoViewModel();
+        $rows = $videoViewModel->fetchInscritosVideosReport();
+
+        $csv = fopen('php://temp', 'r+');
+        fputcsv($csv, [
+            'inscrito_id',
+            'inscrito_nombres',
+            'inscrito_apellidos',
+            'inscrito_email',
+            'ciudad',
+            'nombre_cadena_distribuidor',
+            'fecha_nacimiento',
+            'video_id',
+            'video_titulo',
+            'ultima_vez_visto',
+        ]);
+
+        foreach ($rows as $row) {
+            fputcsv($csv, [
+                $row['inscrito_id'] ?? '',
+                $row['inscrito_nombres'] ?? '',
+                $row['inscrito_apellidos'] ?? '',
+                $row['inscrito_email'] ?? 'NN',
+                $row['ciudad'] ?? 'NN',
+                $row['nombre_cadena_distribuidor'] ?? 'NN',
+                $row['fecha_nacimiento'] ?? '1900-01-01',
+                $row['video_id'] ?? 0,
+                $row['video_titulo'] ?? 'NN',
+                $row['ultima_vez_visto'] ?? '1900-01-01 00:00:00',
+            ]);
+        }
+
+        rewind($csv);
+        $output = stream_get_contents($csv);
+        fclose($csv);
+
+        $filename = 'inscritos_videos_' . date('Ymd_His') . '.csv';
+
+        return $this->response
+            ->setHeader('Content-Type', 'text/csv')
+            ->setHeader('Content-Disposition', 'attachment; filename="' . $filename . '"')
+            ->setBody($output);
+    }
+
     private function getFiltersFromRequest(): array
     {
         $filters = [

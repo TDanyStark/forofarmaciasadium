@@ -76,4 +76,38 @@ class VideoViewModel extends Model
 
         return $builder->get()->getResultArray();
     }
+
+    public function fetchInscritosVideosReport(): array
+    {
+        $builder = $this->db->table('inscritos i');
+        $builder->select([
+            'i.id AS inscrito_id',
+            'i.nombres AS inscrito_nombres',
+            'i.apellidos AS inscrito_apellidos',
+            "COALESCE(i.email, 'NN') AS inscrito_email",
+            "COALESCE(i.ciudad, 'NN') AS ciudad",
+            "COALESCE(i.nombre_cadena_distribuidor, 'NN') AS nombre_cadena_distribuidor",
+            "COALESCE(i.fecha_nacimiento, '1900-01-01') AS fecha_nacimiento",
+            'COALESCE(v.id, 0) AS video_id',
+            "COALESCE(v.nombre, 'NN') AS video_titulo",
+            "COALESCE(MAX(vv.viewed_at), '1900-01-01 00:00:00') AS ultima_vez_visto",
+        ]);
+        $builder->join('video_views vv', 'vv.user_id = i.id', 'left');
+        $builder->join('videos v', 'v.id = vv.video_id', 'left');
+        $builder->groupBy([
+            'i.id',
+            'i.nombres',
+            'i.apellidos',
+            'i.email',
+            'i.ciudad',
+            'i.nombre_cadena_distribuidor',
+            'i.fecha_nacimiento',
+            'v.id',
+            'v.nombre',
+        ]);
+        $builder->orderBy('i.id', 'ASC');
+        $builder->orderBy('ultima_vez_visto', 'DESC');
+
+        return $builder->get()->getResultArray();
+    }
 }
