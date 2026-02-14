@@ -22,16 +22,7 @@
             <input autocomplete="email" class="form-control" type="email" name="email" value="<?= esc(old('email') ?? ($email ?? '')) ?>" required>
           </div>
 
-          <?php $registerUrl = site_url('registro');
-              $redirectValue = old('redirect');
-              if ($redirectValue === null) {
-                $redirectValue = $redirect ?? '';
-              }
-
-              $redirectValue = sanitize_redirect($redirectValue) ?? '';
-              if ($redirectValue !== '' && $redirectValue !== '/') {
-                $registerUrl .= '?redirect=' . urlencode($redirectValue);
-              } ?>
+          <?php $registerUrl = build_redirect_url(site_url('registro'), $redirect ?? null); ?>
 
           <div class="d-flex justify-content-between align-items-center">
             <a href="<?= $registerUrl ?>" class="btn btn-link">Registrarse</a>

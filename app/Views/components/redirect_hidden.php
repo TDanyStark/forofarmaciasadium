@@ -1,9 +1,2 @@
-<?php
-$redirectValue = old('redirect');
-if ($redirectValue === null) {
-  $redirectValue = $redirect ?? '';
-}
-
-$redirectValue = sanitize_redirect($redirectValue) ?? '';
-?>
+<?php $redirectValue = get_redirect_value($redirect ?? null); ?>
 <input type="hidden" name="redirect" value="<?= esc($redirectValue) ?>">

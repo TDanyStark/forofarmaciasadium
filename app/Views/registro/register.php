@@ -88,16 +88,7 @@
                 </div>
 
                 <div class="mt-4 d-flex justify-content-between align-items-center">
-                    <?php $loginUrl = site_url('login');
-                    $redirectValue = old('redirect');
-                    if ($redirectValue === null) {
-                        $redirectValue = $redirect ?? '';
-                    }
-
-                    $redirectValue = sanitize_redirect($redirectValue) ?? '';
-                    if ($redirectValue !== '' && $redirectValue !== '/') {
-                        $loginUrl .= '?redirect=' . urlencode($redirectValue);
-                    } ?>
+                    <?php $loginUrl = build_redirect_url(site_url('login'), $redirect ?? null); ?>
                     <div class="small-note">¿Ya estás registrado? <a class="text-adium" href="<?= $loginUrl ?>">Inicia sesión</a></div>
                     <button class="btn btn-adium" type="submit">Registrar</button>
                 </div>
